@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最新消息 - 國際遊戲協會</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="bg-light py-3">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-5 d-flex justify-content-center">
+                    <img src="img/logogif.gif" alt="Logo" class="img-fluid" style="max-width: 80px;">
+                </div>
+                <div class="col-md-7">
+                    <nav class="d-flex justify-content-center">
+                        <ul class="nav">
+                            <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+                            <li class="nav-item"><a class="nav-link" href="about.html">關於我們</a></li>
+                            <li class="nav-item"><a class="nav-link" href="member.html">成員介紹</a></li>
+                            <li class="nav-item"><a class="nav-link" href="news.html">最新消息</a></li>
+                            <li class="nav-item"><a class="nav-link" href="course.html">課程介紹</a></li>
+                            <li class="nav-item"><a class="nav-link" href="contact.html">聯絡我們</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <section class="py-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2">
+                        <h4>CATEGORIES</h4>
+                        <ul class="list-unstyled">
+                            <li><a href="#" onclick="filterNews('current')">本月消息</a></li>
+                            <li><a href="#" onclick="filterNews('past')">過往消息</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-10">
+                        <div id="news-list" class="list-group">
+                            <!-- 動態插入新聞資料 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-3">
+                    <div class="text-center">
+                        <img src="img/logo-150x150.jpeg" alt="Logo" class="img-fluid mb-2" style="max-width: 100px;">
+                    </div>
+                    <p>遊戲 是最高形式的研究；樂育 是最高層次的學習。<br>
+                        Play, is research in its highest form.<br>
+                        Edutainment, is learning on its highest level.</p>
+                </div>
+                <div class="col-lg-4 mb-3">
+                    <ul class="list-unstyled">
+                        <li><i class="fa fa-map-marker"></i> 地址：220新北市板橋區中正路435號</li>
+                        435藝文特區台灣玩具博物館
+                        <li><i class="fa fa-fax"></i> 傳真：(02)8972-7185</li>
+                        <li><i class="fa fa-envelope"></i> E-mail：<a href="mailto:ipat1071001@ipat.org.tw"
+                                class="text-white">ipat1071001@ipat.org.tw</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 text-center mb-3">
+                    <ul class="list-inline">
+                        <li class="list-inline-item"><a
+                                href="https://www.facebook.com/IPAT-International-Play-Association-Taiwan-Branch-106772071551600"
+                                target="_blank" rel="noopener noreferrer"><img src="img/facebook.png" alt="Facebook"
+                                    class="img-fluid" style="max-width: 30px;"></a></li>
+                        <li class="list-inline-item"><a
+                                href="https://line.me/ti/g2/ftLDwke6OMbboIQNbkGf4Q?utm_source=invitation&amp;utm_medium=link_copy&amp;utm_campaign=default"
+                                target="_blank" rel="noopener noreferrer"><img src="img/line.png" alt="Line"
+                                    class="img-fluid" style="max-width: 30px;"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/ipataiwan1" target="_blank"
+                                rel="noopener noreferrer"><img src="img/twitter.png" alt="Twitter" class="img-fluid"
+                                    style="max-width: 30px;"></a></li>
+                        <li class="list-inline-item"><a href="https://www.instagram.com/ipataiwan/" target="_blank"
+                                rel="noopener noreferrer"><img src="img/IG.png" alt="Instagram" class="img-fluid"
+                                    style="max-width: 30px;"></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p>© Copyright 2025. 網頁設計 By Zero.Lin</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 動態插入新聞資料的範例
+        const newsItems = [
+            {
+                title: "IPAT🌟雙月論壇🌟活動預告",
+                date: "2025-02-25",
+                description: "時間:112年7月1日(星期六)9:00~12:00",
+                image: "img/news1.jpg"
+            },
+            {
+                title: "IPAT會計帳110年度-收支決算表",
+                date: "2023-04-22",
+                description: "附件1-(直式)IPAT會計帳110年度-收支決算表PDF",
+                image: "img/news2.jpg"
+            }
+        ];
+
+        function filterNews(type) {
+            const newsList = document.getElementById('news-list');
+            newsList.innerHTML = '';
+            const currentDate = new Date();
+            newsItems.forEach(news => {
+                const newsDate = new Date(news.date);
+                const isCurrentMonth = newsDate.getMonth() === currentDate.getMonth() && newsDate.getFullYear() === currentDate.getFullYear();
+                if ((type === 'current' && isCurrentMonth) || (type === 'past' && !isCurrentMonth)) {
+                    const newsItem = document.createElement('div');
+                    newsItem.className = 'list-group-item mb-4';
+                    newsItem.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-2">
+                                <img src="${news.image}" class="img-fluid" alt="${news.title}">
+                            </div>
+                            <div class="col-md-10">
+                                <h5>${news.title}</h5>
+                                <p>${news.description}</p>
+                                <small class="text-muted">${news.date}</small>
+                            </div>
+                        </div>
+                    `;
+                    newsList.appendChild(newsItem);
+                }
+            });
+        }
+
+        // 預設顯示本月消息
+        filterNews('current');
+    </script>
+</body>
+
+</html>

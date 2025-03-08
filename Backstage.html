@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>後台管理 - 國際遊戲協會</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        #loginSection {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #adminPanel {
+            display: none;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #f8f9fa;
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore-compat.js"></script>
+    <!-- 引入資料管理模組 -->
+    <script src="js/firebase-data.js"></script>
+</head>
+
+<body>
+    <!-- 登入區域 -->
+    <div id="loginSection" class="container">
+        <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+            <div class="card-header bg-primary text-white">
+                <h4 class="text-center mb-0">管理員登入</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="email" class="form-label">電子郵件</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">密碼</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <div class="d-grid"><!-- 登入按鈕 -->
+                    <button type="button" class="btn btn-primary" onclick="window.login()">登入</button>
+                </div>
+                <div id="loginError" class="text-danger mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理介面 -->
+    <div id="adminPanel">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">國際遊戲協會 - 後台管理</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <span class="nav-link" id="userEmail"></span>
+                        </li>
+                        <li class="nav-item">
+                            <!-- 登出按鈕 -->
+                            <a class="nav-link" href="#" onclick="window.logout()">登出</a>
+
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row">
+                <!-- 側邊欄 -->
+                <div class="col-md-2 sidebar py-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showTab('dashboard')">儀表板</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('news')">最新消息管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('courses')">課程管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('members')">成員管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('registrations')">報名資料管理</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 主要內容區 -->
+                <div class="col-md-10 py-3">
+                    <!-- 儀表板頁面 -->
+                    <div id="dashboard" class="tab-content">
+                        <h2>儀表板</h2>
+                        <div class="row mt-4">
+                            <div class="col-md-3 mb-4">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">最新消息</h5>
+                                        <p class="card-text display-4" id="newsCount">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">課程數量</h5>
+                                        <p class="card-text display-4" id="coursesCount">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">成員數量</h5>
+                                        <p class="card-text display-4" id="membersCount">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">報名數量</h5>
+                                        <p class="card-text display-4" id="registrationsCount">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>最近新增的消息</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group" id="recentNewsList"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>最新課程</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group" id="recentRegistrationsList"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 最新消息管理頁面 -->
+                    <div id="news" class="tab-content" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2>最新消息管理</h2>
+                            <div class="d-flex align-items-center">
+                                <div class="input-group me-3">
+                                    <input type="text" class="form-control" id="newsSearchInput" placeholder="搜尋標題"
+                                        oninput="searchNews()">
+                                </div>
+                                <button class="btn btn-primary col-md-4" data-bs-toggle="modal"
+                                    data-bs-target="#addNewsModal">新增消息</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>標題</th>
+                                        <th>更新日期</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="newsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 課程管理頁面 -->
+                    <div id="courses" class="tab-content" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2>課程管理</h2>
+                            <div class="d-flex align-items-center">
+                                <div class="input-group me-2">
+                                    <input type="text" class="form-control" id="courseSearchInput" placeholder="搜尋課程名稱"
+                                        oninput="searchCourses()">
+                                </div>
+                                <div class="input-group me-3">
+                                    <select class="form-select" id="teacherSearchSelect" onchange="searchCourses()">
+                                        <option value="">選擇授課老師</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary col-md-3" data-bs-toggle="modal"
+                                    data-bs-target="#addCourseModal">新增課程</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>課程名稱</th>
+                                        <th>授課教師</th>
+                                        <th>上課時間</th>
+                                        <th>費用</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coursesTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 成員管理頁面 -->
+                    <div id="members" class="tab-content" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2>成員管理</h2>
+                            <div class="d-flex align-items-center">
+                                <div class="input-group me-2">
+                                    <input type="text" class="form-control" id="memberSearchInput" placeholder="搜尋姓名"
+                                        oninput="searchMembers()">
+                                </div>
+                                <div class="input-group me-3">
+                                    <select class="form-select" id="titleSearchSelect" onchange="searchMembers()">
+                                        <option value="">選擇職稱</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary col-md-3" data-bs-toggle="modal"
+                                    data-bs-target="#addMemberModal">新增成員</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>姓名</th>
+                                        <th>職稱</th>
+                                        <th>電子郵件</th>
+                                        <th>聯絡電話</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="membersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 報名資料管理頁面 -->
+                    <div id="registrations" class="tab-content" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2>報名資料管理</h2>
+                            <div class="d-flex align-items-center">
+                                <div class="input-group me-3">
+                                    <select class="form-select" id="registrationCourseSelect"
+                                        onchange="searchRegistrations()">
+                                        <option value="">選擇課程</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>課程名稱</th>
+                                        <th>報名者姓名</th>
+                                        <th>電話</th>
+                                        <th>報名時間</th>
+                                        <th>報名人數</th>
+                                        <th>總費用</th>
+                                        <th>報到</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="registrationsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增消息 Modal -->
+    <div class="modal fade" id="addNewsModal" tabindex="-1" aria-labelledby="addNewsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewsModalLabel">新增消息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addNewsForm">
+                        <div class="mb-3">
+                            <label for="newsTitle" class="form-label">標題</label>
+                            <input type="text" class="form-control" id="newsTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newsImage" class="form-label">圖片URL</label>
+                            <input type="text" class="form-control" id="newsImage">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newsDescription" class="form-label">內容描述</label>
+                            <textarea class="form-control" id="newsDescription" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="addNews()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增課程 Modal -->
+    <div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCourseModalLabel">新增課程</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCourseForm">
+                        <div class="row mb-3">
+                            <!-- 區塊一：課程名稱、授課教師、上課時間 -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="courseTitle" class="form-label">課程名稱</label>
+                                    <input type="text" class="form-control" id="courseTitle" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="courseTeacher" class="form-label">授課教師</label>
+                                    <select class="form-select" id="courseTeacher" required>
+                                        <option value="">選擇授課老師</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="courseTime" class="form-label">上課時間</label>
+                                    <input type="text" class="form-control" id="courseTime" required>
+                                </div>
+                            </div>
+
+                            <!-- 區塊二：課程費用、上課地點 -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="coursePrice" class="form-label">課程費用</label>
+                                    <input type="number" class="form-control" id="coursePrice" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="courseLocation" class="form-label">上課地點</label>
+                                    <input type="text" class="form-control" id="courseLocation" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="courseImage" class="form-label">圖片URL</label>
+                                    <input type="text" class="form-control" id="courseImage">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 區塊三：課程簡介 -->
+                        <div class="mb-3">
+                            <label for="courseDescription" class="form-label">課程簡介</label>
+                            <textarea class="form-control" id="courseDescription" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="addCourse()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增成員 Modal -->
+    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMemberModalLabel">新增成員</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addMemberForm">
+                        <div class="mb-3">
+                            <label for="memberName" class="form-label">姓名</label>
+                            <input type="text" class="form-control" id="memberName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">職稱/標籤</label>
+                            <div class="border p-3 rounded">
+                                <div id="memberTagsContainer" class="d-flex flex-wrap gap-2">
+                                    <!-- 標籤選項會在這裡動態生成 -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="memberTitle">
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberEmail" class="form-label">電子郵件</label>
+                            <input type="email" class="form-control" id="memberEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberPhone" class="form-label">聯絡電話</label>
+                            <input type="text" class="form-control" id="memberPhone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberImage" class="form-label">照片URL</label>
+                            <input type="text" class="form-control" id="memberImage">
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberDescription" class="form-label">個人介紹</label>
+                            <textarea class="form-control" id="memberDescription" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="addMember()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 使用從 firebase-data.js 引入的 Firebase 物件
+        // 不需要重新宣告 auth 和 db
+
+        // 快取管理
+        const AdminDataManager = {
+            // 更新時間存儲的鍵名
+            CACHE_TIME_KEY: 'admin_update_times',
+
+            // 定義需要管理的表格
+            TABLES: ['Registration', 'course', 'member', 'news', 'delectlog'],
+
+            // 獲取更新時間
+            getUpdateTimes() {
+                const times = localStorage.getItem(this.CACHE_TIME_KEY);
+                return times ? JSON.parse(times) : {};
+            },
+
+            // 保存更新時間
+            saveUpdateTimes(times) {
+                localStorage.setItem(this.CACHE_TIME_KEY, JSON.stringify(times));
+            },
+
+            // 獲取表格的快取數據
+            getTableCache(tableName) {
+                const cache = localStorage.getItem(`admin_${tableName}`);
+                return cache ? JSON.parse(cache) : [];
+            },
+
+            // 保存表格的快取數據
+            saveTableCache(tableName, data) {
+                localStorage.setItem(`admin_${tableName}`, JSON.stringify(data));
+            },
+
+            // 同步單個表格數據
+            async syncTable(tableName) {
+                try {
+                    const updateTimes = this.getUpdateTimes();
+                    const lastUpdate = updateTimes[tableName] || 0;
+                    const currentTime = new Date().getTime();
+
+                    // 查詢該時間點後的更新
+                    let query = window.db.collection(tableName).where('updatetime', '>', new Date(lastUpdate));
+
+                    // 獲取更新的數據
+                    const snapshot = await query.get();
+
+                    if (snapshot.empty) {
+                        console.log(`${tableName}: 沒有新數據`);
+                        return;
+                    }
+
+                    // 獲取現有快取
+                    let cachedData = this.getTableCache(tableName);
+
+                    // delectlog 表的特殊處理
+                    if (tableName === 'delectlog') {
+                        // 處理刪除記錄
+                        snapshot.forEach(doc => {
+                            const deleteInfo = doc.data();
+                            const targetTable = deleteInfo.name;
+                            const targetId = deleteInfo.id;
+
+                            if (targetTable && targetId) {
+                                // 從對應表的快取中刪除記錄
+                                const tableCache = this.getTableCache(targetTable);
+                                const updatedCache = tableCache.filter(item => item.id !== targetId);
+                                this.saveTableCache(targetTable, updatedCache);
+                                console.log(`已從 ${targetTable} 中刪除 ID 為 ${targetId} 的記錄`);
+                            }
+                        });
+
+                        // 更新 delectlog 的時間戳，但不保存其內容
+                        cachedData = [];
+                    } else {
+                        // 其他表格的標準處理
+                        // 將新數據與現有快取合併
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            const id = doc.id;
+
+                            // 檢查記錄是否已存在
+                            const existingIndex = cachedData.findIndex(item => item.id === id);
+
+                            if (existingIndex >= 0) {
+                                // 更新現有記錄
+                                cachedData[existingIndex] = { id, ...data };
+                            } else {
+                                // 添加新記錄
+                                cachedData.push({ id, ...data });
+                            }
+                        });
+                    }
+
+                    // 保存更新後的快取
+                    this.saveTableCache(tableName, cachedData);
+
+                    // 更新時間戳
+                    updateTimes[tableName] = currentTime;
+                    this.saveUpdateTimes(updateTimes);
+
+                    console.log(`${tableName}: 已同步 ${snapshot.size} 條記錄`);
+                } catch (error) {
+                    console.error(`同步 ${tableName} 失敗:`, error);
+                }
+            },
+
+            // 同步所有表格數據
+            async syncAllData() {
+                await Promise.all(this.TABLES.map(table => this.syncTable(table)));
+                console.log('所有數據同步完成');
+            },
+
+            // 清除所有管理員快取
+            clearAllAdminCache() {
+                this.TABLES.forEach(table => {
+                    localStorage.removeItem(`admin_${table}`);
+                });
+                localStorage.removeItem(this.CACHE_TIME_KEY);
+                console.log('已清除所有管理員快取');
+            }
+        };
+
+        // 表格配置信息
+        const TableConfig = {
+            // 新聞配置
+            news: {
+                collectionName: 'news',    // Firestore 集合名稱
+                cacheName: 'news',         // 快取名稱
+                tableId: 'newsTableBody',  // HTML 表格 ID
+                searchInputId: 'newsSearchInput',  // 搜尋輸入框 ID
+                modalId: 'addNewsModal',   // Modal ID
+                formId: 'addNewsForm',     // 表單 ID
+                modalLabelId: 'addNewsModalLabel', // Modal 標題 ID
+                defaultImage: 'img/news-default.jpg',  // 默認圖片
+                deleteLogName: 'news',     // 刪除記錄名稱
+                addBtnId: 'addNewsBtn',    // 添加按鈕 ID
+
+                // 表單字段映射
+                formFields: {
+                    title: 'newsTitle',
+                    content: 'newsDescription',
+                    image: 'newsImage'
+                },
+
+                // 表格行生成函數
+                createTableRow: (item) => {
+                    const updateDate = item.updatetime ?
+                        new Date(item.updatetime.seconds * 1000).toLocaleDateString() : '無日期';
+                    return `
+                        <td>${item.title}</td>
+                        <td>${updateDate}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="TableManager.edit('news', '${item.id}')">編輯</button>
+                            <button class="btn btn-sm btn-danger" onclick="TableManager.delete('news', '${item.id}')">刪除</button>
+                        </td>
+                    `;
+                },
+
+                // 排序函數
+                sortFunc: (a, b) => {
+                    // 使用 Firebase Timestamp 格式正確排序
+                    if (a.updatetime && b.updatetime) {
+                        if (a.updatetime.seconds !== b.updatetime.seconds) {
+                            return b.updatetime.seconds - a.updatetime.seconds;
+                        }
+                        return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
+                    }
+                    return 0;
+                },
+
+                // 搜尋過濾函數
+                filterFunc: (item, searchTerm) => {
+                    return item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase());
+                },
+
+                // 從表單獲取數據的函數
+                getFormData: () => {
+                    return {
+                        title: document.getElementById('newsTitle').value,
+                        content: document.getElementById('newsDescription').value,
+                        image: document.getElementById('newsImage').value || 'img/news-default.jpg',
+                        updatetime: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                }
+            },
+
+            // 課程配置
+            course: {
+                collectionName: 'courses',
+                cacheName: 'course',
+                tableId: 'coursesTableBody',
+                searchInputId: 'courseSearchInput',
+                teacherSearchId: 'teacherSearchSelect',
+                modalId: 'addCourseModal',
+                formId: 'addCourseForm',
+                modalLabelId: 'addCourseModalLabel',
+                defaultImage: 'img/course-default.jpg',
+                deleteLogName: 'courses',
+                addBtnId: 'addCourseBtn',
+
+                formFields: {
+                    title: 'courseTitle',
+                    teacher: 'courseTeacher',
+                    time: 'courseTime',
+                    price: 'coursePrice',
+                    location: 'courseLocation',
+                    description: 'courseDescription',
+                    image: 'courseImage'
+                },
+
+                createTableRow: (item) => {
+                    return `
+                        <td>${item.title || '無標題'}</td>
+                        <td>${item.teacher || '無教師'}</td>
+                        <td>${item.date || '無時間'}</td>
+                        <td>${item.price || '無價格'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="TableManager.edit('course', '${item.id}')">編輯</button>
+                            <button class="btn btn-sm btn-danger" onclick="TableManager.delete('course', '${item.id}')">刪除</button>
+                        </td>
+                    `;
+                },
+
+                sortFunc: (a, b) => {
+                    if (a.updatetime && b.updatetime) {
+                        if (a.updatetime.seconds !== b.updatetime.seconds) {
+                            return b.updatetime.seconds - a.updatetime.seconds;
+                        }
+                        return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
+                    }
+                    return 0;
+                },
+
+                filterFunc: (item, searchTerm, teacherTerm) => {
+                    const titleMatch = item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase());
+                    const teacherMatch = !teacherTerm || (item.teacher && item.teacher === teacherTerm);
+                    return titleMatch && teacherMatch;
+                },
+
+                getFormData: () => {
+                    return {
+                        title: document.getElementById('courseTitle').value,
+                        teacher: document.getElementById('courseTeacher').value,
+                        time: document.getElementById('courseTime').value,
+                        price: parseInt(document.getElementById('coursePrice').value),
+                        location: document.getElementById('courseLocation').value,
+                        description: document.getElementById('courseDescription').value,
+                        image: document.getElementById('courseImage').value || 'img/course-default.jpg',
+                        updatetime: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                }
+            },
+
+            // 成員配置
+            member: {
+                collectionName: 'member',
+                cacheName: 'member',
+                tableId: 'membersTableBody',
+                searchInputId: 'memberSearchInput',
+                titleSearchId: 'titleSearchSelect',
+                modalId: 'addMemberModal',
+                formId: 'addMemberForm',
+                modalLabelId: 'addMemberModalLabel',
+                defaultImage: 'img/member-default.jpg',
+                deleteLogName: 'member',
+                addBtnId: 'addMemberBtn',
+
+                formFields: {
+                    name: 'memberName',
+                    tag: 'memberTitle',
+                    mail: 'memberEmail',
+                    phone: 'memberPhone',
+                    introduction: 'memberDescription',
+                    image: 'memberImage'
+                },
+
+                createTableRow: (item) => {
+                    // 將標籤數組轉換為顯示用字串
+                    const tagDisplay = Array.isArray(item.tag) ? item.tag.join(', ') : (item.tag || '-');
+                    
+                    return `
+                        <td>${item.name}</td>
+                        <td>${tagDisplay}</td>
+                        <td>${item.mail || '-'}</td>
+                        <td>${item.phone || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="TableManager.edit('member', '${item.id}')">編輯</button>
+                            <button class="btn btn-sm btn-danger" onclick="TableManager.delete('member', '${item.id}')">刪除</button>
+                        </td>
+                    `;
+                },
+
+                sortFunc: (a, b) => {
+                    return a.name.localeCompare(b.name);
+                },
+
+                filterFunc: (item, searchTerm, titleTerm) => {
+                    const nameMatch = item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase());
+                    
+                    // 修改標籤篩選邏輯，支持數組形式的標籤
+                    const titleMatch = !titleTerm || (Array.isArray(item.tag) && item.tag.includes(titleTerm));
+                    
+                    return nameMatch && titleMatch;
+                },
+
+                getFormData: () => {
+                    // 獲取選中的標籤
+                    const selectedTags = [];
+                    document.querySelectorAll('#memberTagsContainer input[type="checkbox"]:checked').forEach(checkbox => {
+                        selectedTags.push(checkbox.value);
+                    });
+                    
+                    console.log('提交表單 - 選中的標籤:', selectedTags);
+                    
+                    return {
+                        name: document.getElementById('memberName').value,
+                        tag: selectedTags, // 保存為數組
+                        mail: document.getElementById('memberEmail').value,
+                        phone: document.getElementById('memberPhone').value,
+                        introduction: document.getElementById('memberDescription').value,
+                        image: document.getElementById('memberImage').value || 'img/member-default.jpg',
+                        updatetime: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                }
+            },
+
+            // 報名資料配置
+            registration: {
+                collectionName: 'enrollments',
+                cacheName: 'Registration',
+                tableId: 'registrationsTableBody',
+                courseSelectId: 'registrationCourseSelect',
+                deleteLogName: 'enrollments',
+
+
+                createTableRow: (item) => {
+                    const enrollDate = item.enrollDate ?
+                        new Date(item.enrollDate).toLocaleString() : '無日期';
+
+                    // 取得報到狀態並設定不同的按鈕樣式
+                    const isCheckedIn = item.check_in === true;
+                    const checkInBtnClass = isCheckedIn ? 'btn-success' : 'btn-outline-success';
+                    const checkInBtnText = isCheckedIn ? '已報到' : '未報到';
+
+                    return `
+                        <td>${item.courseName || '未知課程'}</td>
+                        <td>${item.name || '未知'}</td>
+                        <td>${item.phone || '無'}</td>
+                        <td>${enrollDate}</td>
+                        <td>${item.participants || 1}</td>
+                        <td>${item.totalFee || '未知'}</td>
+                        <td>
+                            <button class="btn btn-sm ${checkInBtnClass}" onclick="toggleCheckIn('${item.id}', ${!isCheckedIn})">
+                                ${checkInBtnText}
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="TableManager.delete('registration', '${item.id}')">刪除</button>
+                        </td>
+                    `;
+                },
+
+                sortFunc: (a, b) => {
+                    if (a.updatetime && b.updatetime) {
+                        if (a.updatetime.seconds !== b.updatetime.seconds) {
+                            return b.updatetime.seconds - a.updatetime.seconds;
+                        }
+                        return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
+                    } else if (a.enrollDate && b.enrollDate) {
+                        return new Date(b.enrollDate) - new Date(a.enrollDate);
+                    }
+                    return 0;
+                },
+
+                filterFunc: (item, courseTerm) => {
+                    return !courseTerm || (item.courseName && item.courseName === courseTerm);
+                }
+            }
+        };
+
+        // 表格管理器 - 統一處理所有表格的增刪改查操作
+        const TableManager = {
+            // 加載表格數據
+            load: function (tableType) {
+                const config = TableConfig[tableType];
+                if (!config) return;
+
+                const data = AdminDataManager.getTableCache(config.cacheName);
+                const tableBody = document.getElementById(config.tableId);
+                tableBody.innerHTML = '';
+
+                // 特殊處理 - 報名表不自動加載數據
+                if (tableType === 'registration') {
+                    this.updateDropdowns(tableType);
+                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center">請使用上方的搜尋功能查詢報名資料</td></tr>';
+                    return;
+                }
+
+                // 確保有資料且為陣列
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    console.log(`沒有${tableType}資料或資料格式不正確`);
+                    return;
+                }
+
+                // 更新下拉選單
+                this.updateDropdowns(tableType);
+
+                // 按設定排序
+                const sortedData = [...data].sort(config.sortFunc);
+
+                // 生成表格行
+                sortedData.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = config.createTableRow(item);
+                    tableBody.appendChild(row);
+                });
+            },
+
+            // 搜尋表格數據
+            search: function (tableType) {
+                const config = TableConfig[tableType];
+                if (!config) return;
+
+                const data = AdminDataManager.getTableCache(config.cacheName);
+                const tableBody = document.getElementById(config.tableId);
+                tableBody.innerHTML = '';
+
+                // 確保有資料且為陣列
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    console.log(`沒有${tableType}資料或資料格式不正確`);
+                    return;
+                }
+
+                // 獲取搜尋條件
+                let searchTerm = '';
+                let secondaryTerm = '';
+
+                if (tableType === 'news') {
+                    searchTerm = document.getElementById(config.searchInputId).value;
+                } else if (tableType === 'course') {
+                    searchTerm = document.getElementById(config.searchInputId).value;
+                    secondaryTerm = document.getElementById(config.teacherSearchId).value;
+                } else if (tableType === 'member') {
+                    searchTerm = document.getElementById(config.searchInputId).value;
+                    secondaryTerm = document.getElementById(config.titleSearchId).value;
+                } else if (tableType === 'registration') {
+                    searchTerm = document.getElementById(config.courseSelectId).value;
+                    // 如果未選擇課程
+                    if (!searchTerm) {
+                        tableBody.innerHTML = '<tr><td colspan="7" class="text-center">請選擇課程以查詢報名資料</td></tr>';
+                        return;
+                    }
+                }
+
+                // 按設定排序
+                const sortedData = [...data].sort(config.sortFunc);
+
+                // 過濾搜尋結果
+                const filteredData = sortedData.filter(item => config.filterFunc(item, searchTerm, secondaryTerm));
+
+                if (filteredData.length === 0 && tableType === 'registration') {
+                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center">沒有找到符合條件的報名資料</td></tr>';
+                    return;
+                }
+
+                // 生成表格行
+                filteredData.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = config.createTableRow(item);
+                    tableBody.appendChild(row);
+                });
+            },
+
+            // 更新下拉選單
+            updateDropdowns: function (tableType) {
+                if (tableType === 'course') {
+                    this.updateTeacherDropdown();
+                } else if (tableType === 'member') {
+                    this.updateTitleDropdown();
+                } else if (tableType === 'registration') {
+                    this.updateRegistrationCourseDropdown();
+                }
+            },
+
+            // 更新授課老師下拉選單
+            updateTeacherDropdown: function () {
+                const teacherSelect = document.getElementById('teacherSearchSelect');
+                teacherSelect.innerHTML = '<option value="">選擇授課老師</option>';
+
+                // 從member資料中獲取具有授課講師標籤的成員
+                const membersData = AdminDataManager.getTableCache('member');
+
+                // 收集所有有授課講師標籤的成員
+                const teachers = new Set();
+                membersData.forEach(member => {
+                    if (member.tag && Array.isArray(member.tag) && member.tag.includes('授課講師')) {
+                        teachers.add(member.name);
+                    }
+                });
+
+                // 將授課老師添加到下拉選單
+                teachers.forEach(teacher => {
+                    const option = document.createElement('option');
+                    option.value = teacher;
+                    option.textContent = teacher;
+                    teacherSelect.appendChild(option);
+                });
+            },
+
+            // 更新職稱下拉選單
+            updateTitleDropdown: function () {
+                const titleSelect = document.getElementById('titleSearchSelect');
+                titleSelect.innerHTML = '<option value="">選擇職稱</option>';
+
+                // 使用固定的職稱列表
+                const titles = ['會長', '理事長', '副理事長', '理事', '監事','一般會員','授課講師'];
+
+                // 將職稱添加到下拉選單
+                titles.forEach(title => {
+                    const option = document.createElement('option');
+                    option.value = title;
+                    option.textContent = title;
+                    titleSelect.appendChild(option);
+                });
+            },
+
+            // 更新報名課程下拉選單
+            updateRegistrationCourseDropdown: function () {
+                const courseSelect = document.getElementById('registrationCourseSelect');
+                courseSelect.innerHTML = '<option value="">選擇課程</option>';
+
+                // 從課程資料中獲取課程標題
+                const coursesData = AdminDataManager.getTableCache('course');
+
+                // 按時間排序，最新的在前面
+                const sortedCourses = [...coursesData].sort((a, b) => {
+                    if (a.updatetime && b.updatetime) {
+                        if (a.updatetime.seconds !== b.updatetime.seconds) {
+                            return b.updatetime.seconds - a.updatetime.seconds;
+                        }
+                        return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
+                    }
+                    return 0;
+                });
+
+                // 收集所有唯一的課程名稱
+                const courses = new Set();
+                sortedCourses.forEach(course => {
+                    if (course.title) {
+                        courses.add(course.title);
+                    }
+                });
+
+                // 將課程名稱添加到下拉選單
+                courses.forEach(courseTitle => {
+                    const option = document.createElement('option');
+                    option.value = courseTitle;
+                    option.textContent = courseTitle;
+                    courseSelect.appendChild(option);
+                });
+            },
+
+            // 添加新記錄
+            add: function (tableType) {
+                const config = TableConfig[tableType];
+                if (!config) return;
+
+                const form = document.getElementById(config.formId);
+
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const data = config.getFormData();
+
+                window.db.collection(config.collectionName).add(data)
+                    .then((docRef) => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById(config.modalId));
+                        modal.hide();
+                        form.reset();
+
+                        // 同步數據後重新加載
+                        AdminDataManager.syncTable(config.cacheName).then(() => {
+                            this.load(tableType);
+                            loadDashboard();
+                        });
+
+                        alert(`新增${tableType}成功！`);
+                    })
+                    .catch(error => {
+                        alert(`新增失敗: ${error.message}`);
+                    });
+            },
+
+            // 編輯記錄
+            edit: function (tableType, id) {
+                const config = TableConfig[tableType];
+                if (!config) return;
+
+                const data = AdminDataManager.getTableCache(config.cacheName);
+                const item = data.find(item => item.id === id);
+
+                if (!item) {
+                    alert(`找不到該${tableType}`);
+                    return;
+                }
+
+                // 填充表單
+                Object.keys(config.formFields).forEach(key => {
+                    const fieldId = config.formFields[key];
+                    const element = document.getElementById(fieldId);
+                    
+                    // 對於標籤的特殊處理
+                    if (key === 'tag' && tableType === 'member') {
+                        // 初始化標籤選擇器並設置已選標籤
+                        const selectedTags = Array.isArray(item[key]) ? item[key] : [];
+                        initMemberTags(selectedTags);
+                    }
+                    // 對於下拉選單的特殊處理
+                    else if (element && element.tagName === 'SELECT') {
+                        // 如果是授課老師下拉選單，先更新選項
+                        if (fieldId === 'courseTeacher') {
+                            this.updateTeacherSelect();
+                        }
+
+                        // 嘗試選擇匹配的選項
+                        const value = item[key] || '';
+                        const options = Array.from(element.options);
+                        const found = options.find(option => option.value === value);
+
+                        if (found) {
+                            element.value = value;
+                        } else if (value && fieldId === 'courseTeacher') {
+                            // 如果在下拉選單中找不到此老師，動態添加
+                            const option = document.createElement('option');
+                            option.value = value;
+                            option.textContent = value;
+                            element.appendChild(option);
+                            element.value = value;
+                        }
+                    } else if (element) {
+                        // 一般輸入欄位
+                        element.value = item[key] || '';
+                    }
+                });
+
+                // 修改Modal標題
+                document.getElementById(config.modalLabelId).textContent = `編輯${tableType}`;
+
+                // 修改提交按鈕
+                const submitButton = document.querySelector(`#${config.modalId} .modal-footer .btn-primary`);
+                submitButton.textContent = '更新';
+                submitButton.onclick = () => this.update(tableType, id);
+
+                // 顯示Modal
+                const modal = new bootstrap.Modal(document.getElementById(config.modalId));
+                modal.show();
+            },
+
+            // 更新記錄
+            update: function (tableType, id) {
+                const config = TableConfig[tableType];
+                if (!config) return;
+
+                const form = document.getElementById(config.formId);
+
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const data = config.getFormData();
+
+                window.db.collection(config.collectionName).doc(id).update(data)
+                    .then(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById(config.modalId));
+                        modal.hide();
+                        
+                        // 徹底清空表單
+                        this.resetForm(tableType);
+
+                        // 還原Modal標題和按鈕
+                        document.getElementById(config.modalLabelId).textContent = `新增${tableType}`;
+                        const submitButton = document.querySelector(`#${config.modalId} .modal-footer .btn-primary`);
+                        submitButton.textContent = '儲存';
+                        submitButton.onclick = () => this.add(tableType);
+
+                        // 同步數據後重新加載
+                        AdminDataManager.syncTable(config.cacheName).then(() => {
+                            this.load(tableType);
+                            loadDashboard();
+                        });
+
+                        alert(`更新${tableType}成功！`);
+                    })
+                    .catch(error => {
+                        alert(`更新失敗: ${error.message}`);
+                    });
+            },
+
+            // 新增方法：重置表單
+            resetForm: function(tableType) {
+                const config = TableConfig[tableType];
+                if (!config) return;
+                
+                // 重置表單基本欄位
+                const form = document.getElementById(config.formId);
+                form.reset();
+                
+                // 處理特殊欄位
+                if (tableType === 'member') {
+                    // 清空標籤選擇
+                    initMemberTags([]);
+                }
+                
+                // 還原Modal標題和按鈕
+                document.getElementById(config.modalLabelId).textContent = `新增${tableType}`;
+                const submitButton = document.querySelector(`#${config.modalId} .modal-footer .btn-primary`);
+                submitButton.textContent = '儲存';
+                submitButton.onclick = () => this.add(tableType);
+                
+                console.log(`已重置${tableType}表單`);
+            },
+
+            // 刪除記錄
+            delete: function (tableType, id) {
+                const config = TableConfig[tableType];
+                if (!config) return;
+
+                if (confirm(`確定要刪除這個${tableType}嗎？`)) {
+                    // 首先添加一條刪除記錄
+                    window.db.collection('delectlog').add({
+                        name: config.deleteLogName,
+                        id: id,
+                        updatetime: firebase.firestore.FieldValue.serverTimestamp()
+                    })
+                        .then(() => {
+                            // 然後刪除實際記錄
+                            return window.db.collection(config.collectionName).doc(id).delete();
+                        })
+                        .then(() => {
+                            // 同步刪除日誌和表格數據
+                            return Promise.all([
+                                AdminDataManager.syncTable('delectlog'),
+                                AdminDataManager.syncTable(config.cacheName)
+                            ]);
+                        })
+                        .then(() => {
+                            this.load(tableType);
+                            loadDashboard();
+                            alert('刪除成功！');
+                        })
+                        .catch(error => {
+                            alert(`刪除失敗: ${error.message}`);
+                        });
+                }
+            },
+
+            // 更新授課老師下拉選單 (新增一個方法用於Modal)
+            updateTeacherSelect: function () {
+                const teacherSelect = document.getElementById('courseTeacher');
+                teacherSelect.innerHTML = '<option value="">選擇授課老師</option>';
+
+                // 從member資料中獲取具有授課講師標籤的成員
+                const membersData = AdminDataManager.getTableCache('member');
+
+                // 收集所有有授課講師標籤的成員
+                const teachers = new Set();
+                membersData.forEach(member => {
+                    if (member.tag && Array.isArray(member.tag) && member.tag.includes('授課講師')) {
+                        teachers.add(member.name);
+                    }
+                });
+
+                // 將授課老師添加到下拉選單
+                teachers.forEach(teacher => {
+                    const option = document.createElement('option');
+                    option.value = teacher;
+                    option.textContent = teacher;
+                    teacherSelect.appendChild(option);
+                });
+            }
+        };
+
+        // 監聽認證狀態變化
+        window.auth.onAuthStateChanged(async function (user) {
+            if (user) {
+                // 用戶已登入
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+
+                // 首先同步所有數據
+                await AdminDataManager.syncAllData();
+
+                // 然後載入資料到頁面
+                loadDashboard();
+                TableManager.load('news');
+                TableManager.load('course');
+                TableManager.load('member');
+                TableManager.load('registration');
+            } else {
+                // 用戶未登入
+                document.getElementById('loginSection').style.display = 'flex';
+                document.getElementById('adminPanel').style.display = 'none';
+            }
+        });
+
+        // 切換頁籤
+        function showTab(tabId) {
+            // 隱藏所有頁籤
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            // 顯示選中的頁籤
+            document.getElementById(tabId).style.display = 'block';
+
+            // 更新導航欄高亮
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`.nav-link[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
+
+        // 載入儀表板資料 (修改使用快取數據)
+        function loadDashboard() {
+            // 使用快取數據
+            const newsData = AdminDataManager.getTableCache('news');
+            const coursesData = AdminDataManager.getTableCache('course');
+            const membersData = AdminDataManager.getTableCache('member');
+            const enrollmentsData = AdminDataManager.getTableCache('Registration');
+
+            // 更新統計數據
+            document.getElementById('newsCount').textContent = newsData.length;
+            document.getElementById('coursesCount').textContent = coursesData.length;
+            document.getElementById('membersCount').textContent = membersData.length;
+            document.getElementById('registrationsCount').textContent = enrollmentsData.length;
+
+            // 顯示最近的消息
+            const recentNewsList = document.getElementById('recentNewsList');
+            recentNewsList.innerHTML = '';
+
+            // 按時間排序並取前5條
+            const sortedNews = [...newsData].sort((a, b) => {
+                // 使用 Firebase Timestamp 格式正確排序
+                if (a.updatetime && b.updatetime) {
+                    if (a.updatetime.seconds !== b.updatetime.seconds) {
+                        return b.updatetime.seconds - a.updatetime.seconds;
+                    }
+                    return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
+                }
+                return 0;
+            }).slice(0, 5);
+
+            sortedNews.forEach(news => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                const updateDate = news.updatetime ?
+                    new Date(news.updatetime.seconds * 1000).toLocaleDateString() : '無日期';
+                li.innerHTML = `
+                    ${news.title}
+                    <small>${updateDate}</small>
+                `;
+                recentNewsList.appendChild(li);
+            });
+
+            // 顯示最近的課程
+            const recentRegistrationsList = document.getElementById('recentRegistrationsList');
+            recentRegistrationsList.innerHTML = '';
+
+            // 按時間排序並取前5條
+            const sortedCourses = [...coursesData].sort((a, b) => {
+                // 使用 Firebase Timestamp 格式正確排序
+                if (a.updatetime && b.updatetime) {
+                    if (a.updatetime.seconds !== b.updatetime.seconds) {
+                        return b.updatetime.seconds - a.updatetime.seconds;
+                    }
+                    return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
+                }
+                return 0;
+            }).slice(0, 5);
+
+            sortedCourses.forEach(course => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                const updateDate = course.updatetime ?
+                    new Date(course.updatetime.seconds * 1000).toLocaleDateString() : '無日期';
+                li.innerHTML = `
+                    ${course.title}  - ${course.date || '無日期'} - ${course.teacher || '無教師'}
+                    <small>${updateDate}</small>
+                `;
+                recentRegistrationsList.appendChild(li);
+            });
+        }
+
+        // 以下是將表單提交綁定到TableManager
+        function addNews() {
+            TableManager.add('news');
+        }
+
+        function searchNews() {
+            TableManager.search('news');
+        }
+
+        function addCourse() {
+            TableManager.add('course');
+        }
+
+        function searchCourses() {
+            TableManager.search('course');
+        }
+
+        function addMember() {
+            TableManager.add('member');
+        }
+
+        function searchMembers() {
+            TableManager.search('member');
+        }
+
+        function searchRegistrations() {
+            TableManager.search('registration');
+        }
+
+        // 當Modal打開時更新授課老師下拉選單
+        document.getElementById('addCourseModal').addEventListener('show.bs.modal', function () {
+            TableManager.updateTeacherSelect();
+        });
+
+        // 當成員Modal打開時，初始化標籤選擇器
+        document.getElementById('addMemberModal').addEventListener('show.bs.modal', function () {
+            // 檢查當前是否處於編輯模式
+            const modalTitle = document.getElementById('addMemberModalLabel').textContent;
+            // 只有在「新增成員」模式下才初始化空標籤，編輯模式下保留已設置的標籤
+            if (modalTitle === '新增成員') {
+                initMemberTags();
+            }
+        });
+
+        // 初始化成員標籤選擇器
+        function initMemberTags(selectedTags = []) {
+            const tagsContainer = document.getElementById('memberTagsContainer');
+            tagsContainer.innerHTML = '';  // 清空容器                        
+            // 可選擇的標籤列表
+            const availableTags = ['會長', '理事長', '副理事長', '理事', '監事', '一般會員', '授課講師'];
+            
+            // 為每個標籤創建一個 checkbox
+            availableTags.forEach(tag => {
+                const isChecked = selectedTags.includes(tag);
+                                
+                const tagDiv = document.createElement('div');
+                tagDiv.className = 'form-check';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'form-check-input';
+                checkbox.id = `tag_${tag}`;
+                checkbox.value = tag;
+                checkbox.checked = isChecked;
+                
+                const label = document.createElement('label');
+                label.className = 'form-check-label';
+                label.htmlFor = `tag_${tag}`;
+                label.textContent = tag;
+                
+                tagDiv.appendChild(checkbox);
+                tagDiv.appendChild(label);
+                tagsContainer.appendChild(tagDiv);
+            });
+        }
+
+        // 添加切換報到狀態的函數
+        function toggleCheckIn(id, newStatus) {
+            if (!id) return;
+
+            // 更新 Firestore 數據
+            window.db.collection('Registration').doc(id).update({
+                check_in: newStatus,
+                updatetime: firebase.firestore.FieldValue.serverTimestamp()
+            })
+                .then(() => {
+                    // 同步數據後重新加載
+                    AdminDataManager.syncTable('Registration').then(() => {
+                        searchRegistrations(); // 重新加載顯示的報名資料
+                    });
+
+                    const statusText = newStatus ? '已報到' : '未報到';
+                    console.log(`報名者狀態已更新為${statusText}`);
+                })
+                .catch(error => {
+                    alert(`更新報到狀態失敗: ${error.message}`);
+                });
+        }
+
+        // 為每個模態視窗的關閉按鈕和取消按鈕添加事件監聽器
+        document.querySelectorAll('.modal .btn-close, .modal .btn-secondary').forEach(button => {
+            button.addEventListener('click', function() {
+                const modalId = this.closest('.modal').id;
+                let tableType = '';
+                
+                if (modalId === 'addNewsModal') {
+                    tableType = 'news';
+                } else if (modalId === 'addCourseModal') {
+                    tableType = 'course';
+                } else if (modalId === 'addMemberModal') {
+                    tableType = 'member';
+                }
+                
+                if (tableType) {
+                    TableManager.resetForm(tableType);
+                    
+                    // 確保模態視窗內的元素不會保留焦點
+                    setTimeout(() => {
+                        document.activeElement.blur();
+                        // 將焦點移到一個安全的元素
+                        document.querySelector('body').focus();
+                    }, 150);
+                }
+            });
+        });
+
+        // 為新增按鈕添加事件監聽器，確保表單被清空
+        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const target = this.getAttribute('data-bs-target');
+                let tableType = '';
+                
+                if (target === '#addNewsModal') {
+                    tableType = 'news';
+                } else if (target === '#addCourseModal') {
+                    tableType = 'course';
+                } else if (target === '#addMemberModal') {
+                    tableType = 'member';
+                }
+                
+                if (tableType) {
+                    setTimeout(() => TableManager.resetForm(tableType), 100);
+                }
+            });
+        });
+        
+        // 修復模態無障礙性問題
+        document.querySelectorAll('.modal').forEach(modal => {
+            // 當模態隱藏後移除所有可能的焦點
+            modal.addEventListener('hidden.bs.modal', function() {
+                // 移除所有表單元素的焦點
+                const focusableElements = this.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                focusableElements.forEach(el => el.blur());
+                
+                // 確保沒有元素保留焦點
+                document.activeElement.blur();
+                // 將焦點移到一個安全的元素
+                document.querySelector('body').focus();
+            });
+        });
+    </script>
+</body>
+
+</html>
