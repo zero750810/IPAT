@@ -1,6 +1,7 @@
 const news = [
   {
-    "id": "hjgtWDXUIXhelPtZ4YAk",
+    "id": "",
+    "docId": "hjgtWDXUIXhelPtZ4YAk",
     "description": "",
     "image": "",
     "title": "測試訊息",
@@ -8,7 +9,8 @@ const news = [
     "updatetime": "2025-03-07T13:08:04.465Z"
   },
   {
-    "id": "6HfF7MaY4f3X6XrI9GAW",
+    "id": "",
+    "docId": "6HfF7MaY4f3X6XrI9GAW",
     "description": 123456,
     "image": "img/news-default.jpg",
     "title": "測試訊息12",
