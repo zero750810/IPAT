@@ -1,7 +1,6 @@
 const course = [
   {
-    "id": "",
-    "docId": "CjQxhrLJLlBwPMzstpmJ",
+    "id": "CjQxhrLJLlBwPMzstpmJ",
     "title": "課程測試",
     "content": "內文",
     "teacher": "測試老師",
