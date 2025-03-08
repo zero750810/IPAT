@@ -160,13 +160,13 @@ const DataManager = {
             }
             
             // 獲取上次更新時間
-            const lastUpdateTime = this.getLastUpdateTime('courses');
+            const lastUpdateTime = this.getLastUpdateTime('course');
             const currentTime = new Date().getTime();
             
             // 檢查是否有快取
-            if (this.hasCache('courses')) {
+            if (this.hasCache('course')) {
                 // 從資料庫中獲取新的資料
-                const snapshot = await window.db.collection('courses')
+                const snapshot = await window.db.collection('course')
                     .orderBy('updatetime', 'desc')
                     .get();
                 
@@ -185,7 +185,7 @@ const DataManager = {
                     }));
                 
                 if (newData.length > 0) {
-                    const cachedData = this.getFromCache('courses').data;
+                    const cachedData = this.getFromCache('course').data;
                     
                     // 合併新舊資料
                     const mergedData = [...cachedData, ...newData];
@@ -194,25 +194,25 @@ const DataManager = {
                     mergedData.sort((a, b) => b.updatetime - a.updatetime);
                     
                     // 更新快取
-                    this.saveToCache('courses', mergedData);
+                    this.saveToCache('course', mergedData);
                     
                     // 更新時間戳
-                    this.setLastUpdateTime('courses', currentTime);
+                    this.setLastUpdateTime('course', currentTime);
                     
                     console.log(`課程: 已同步 ${newData.length} 條記錄`);
                     return mergedData;
                 }
                 
                 console.log('課程: 沒有新資料');
-                return this.getFromCache('courses').data;
+                return this.getFromCache('course').data;
             } else {
                 // 沒有快取，從資料庫取得最新10筆資料
-                const snapshot = await window.db.collection('courses')
+                const snapshot = await window.db.collection('course')
                     .orderBy('updatetime', 'desc')
                     .limit(10)
                     .get();
                 
-                const coursesData = snapshot.docs.map(doc => ({
+                const courseData = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
                     updatetime: doc.data().updatetime ? 
@@ -220,20 +220,20 @@ const DataManager = {
                 }));
                 
                 // 儲存到快取
-                this.saveToCache('courses', coursesData);
+                this.saveToCache('course', courseData);
                 
                 // 更新時間戳
-                this.setLastUpdateTime('courses', currentTime);
+                this.setLastUpdateTime('course', currentTime);
                 
-                console.log(`課程: 首次載入 ${coursesData.length} 條記錄`);
-                return coursesData;
+                console.log(`課程: 首次載入 ${courseData.length} 條記錄`);
+                return courseData;
             }
         } catch (error) {
             console.error('獲取課程資料失敗：', error);
             
             // 如果有快取，返回快取資料
-            if (this.hasCache('courses')) {
-                return this.getFromCache('courses').data;
+            if (this.hasCache('course')) {
+                return this.getFromCache('course').data;
             }
             return [];
         }
@@ -302,13 +302,13 @@ const DataManager = {
             await this.processDeleteLogs();
             
             // 獲取上次更新時間
-            const lastUpdateTime = this.getLastUpdateTime('members');
+            const lastUpdateTime = this.getLastUpdateTime('member');
             const currentTime = new Date().getTime();
             
             // 檢查是否有快取
-            if (this.hasCache('members')) {
+            if (this.hasCache('member')) {
                 // 從資料庫中獲取新的資料
-                const snapshot = await window.db.collection('members')
+                const snapshot = await window.db.collection('member')
                     .orderBy('updatetime', 'desc')
                     .get();
                 
@@ -327,7 +327,7 @@ const DataManager = {
                     }));
                 
                 if (newData.length > 0) {
-                    const cachedData = this.getFromCache('members').data;
+                    const cachedData = this.getFromCache('member').data;
                     
                     // 合併新舊資料
                     const mergedData = [...cachedData, ...newData];
@@ -336,24 +336,24 @@ const DataManager = {
                     mergedData.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
                     
                     // 更新快取
-                    this.saveToCache('members', mergedData);
+                    this.saveToCache('member', mergedData);
                     
                     // 更新時間戳
-                    this.setLastUpdateTime('members', currentTime);
+                    this.setLastUpdateTime('member', currentTime);
                     
                     console.log(`成員: 已同步 ${newData.length} 條記錄`);
                     return mergedData;
                 }
                 
                 console.log('成員: 沒有新資料');
-                return this.getFromCache('members').data;
+                return this.getFromCache('member').data;
             } else {
                 // 沒有快取，從資料庫取得所有資料
-                const snapshot = await window.db.collection('members')
+                const snapshot = await window.db.collection('member')
                     .orderBy('name')
                     .get();
                 
-                const membersData = snapshot.docs.map(doc => ({
+                const memberData = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
                     updatetime: doc.data().updatetime ? 
@@ -361,20 +361,20 @@ const DataManager = {
                 }));
                 
                 // 儲存到快取
-                this.saveToCache('members', membersData);
+                this.saveToCache('member', memberData);
                 
                 // 更新時間戳
-                this.setLastUpdateTime('members', currentTime);
+                this.setLastUpdateTime('member', currentTime);
                 
-                console.log(`成員: 首次載入 ${membersData.length} 條記錄`);
-                return membersData;
+                console.log(`成員: 首次載入 ${memberData.length} 條記錄`);
+                return memberData;
             }
         } catch (error) {
             console.error('獲取成員資料失敗：', error);
             
             // 如果有快取，返回快取資料
-            if (this.hasCache('members')) {
-                return this.getFromCache('members').data;
+            if (this.hasCache('member')) {
+                return this.getFromCache('member').data;
             }
             return [];
         }
@@ -393,13 +393,13 @@ const DataManager = {
             await this.processDeleteLogs();
             
             // 獲取上次更新時間
-            const lastUpdateTime = this.getLastUpdateTime('enrollments');
+            const lastUpdateTime = this.getLastUpdateTime('Registration');
             const currentTime = new Date().getTime();
             
             // 檢查是否有快取
-            if (this.hasCache('enrollments')) {
+            if (this.hasCache('Registration')) {
                 // 從資料庫中獲取新的資料
-                const snapshot = await window.db.collection('enrollments')
+                const snapshot = await window.db.collection('Registration')
                     .orderBy('enrollDate', 'desc')
                     .get();
                 
@@ -418,7 +418,7 @@ const DataManager = {
                     }));
                 
                 if (newData.length > 0) {
-                    const cachedData = this.getFromCache('enrollments').data;
+                    const cachedData = this.getFromCache('Registration').data;
                     
                     // 合併新舊資料
                     const mergedData = [...cachedData, ...newData];
@@ -427,25 +427,25 @@ const DataManager = {
                     mergedData.sort((a, b) => b.enrollDate - a.enrollDate);
                     
                     // 更新快取
-                    this.saveToCache('enrollments', mergedData);
+                    this.saveToCache('Registration', mergedData);
                     
                     // 更新時間戳
-                    this.setLastUpdateTime('enrollments', currentTime);
+                    this.setLastUpdateTime('Registration', currentTime);
                     
                     console.log(`報名: 已同步 ${newData.length} 條記錄`);
                     return mergedData;
                 }
                 
                 console.log('報名: 沒有新資料');
-                return this.getFromCache('enrollments').data;
+                return this.getFromCache('Registration').data;
             } else {
                 // 沒有快取，從資料庫取得最新20筆資料
-                const snapshot = await window.db.collection('enrollments')
+                const snapshot = await window.db.collection('Registration')
                     .orderBy('enrollDate', 'desc')
                     .limit(20)
                     .get();
                 
-                const enrollmentsData = snapshot.docs.map(doc => ({
+                const RegistrationData = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
                     enrollDate: doc.data().enrollDate ? 
@@ -453,20 +453,20 @@ const DataManager = {
                 }));
                 
                 // 儲存到快取
-                this.saveToCache('enrollments', enrollmentsData);
+                this.saveToCache('Registration', RegistrationData);
                 
                 // 更新時間戳
-                this.setLastUpdateTime('enrollments', currentTime);
+                this.setLastUpdateTime('Registration', currentTime);
                 
-                console.log(`報名: 首次載入 ${enrollmentsData.length} 條記錄`);
-                return enrollmentsData;
+                console.log(`報名: 首次載入 ${RegistrationData.length} 條記錄`);
+                return RegistrationData;
             }
         } catch (error) {
             console.error('獲取報名資料失敗：', error);
             
             // 如果有快取，返回快取資料
-            if (this.hasCache('enrollments')) {
-                return this.getFromCache('enrollments').data;
+            if (this.hasCache('Registration')) {
+                return this.getFromCache('Registration').data;
             }
             return [];
         }
@@ -475,9 +475,9 @@ const DataManager = {
     // 清除所有快取
     clearAllCache: function() {
         localStorage.removeItem('news');
-        localStorage.removeItem('courses');
-        localStorage.removeItem('members');
-        localStorage.removeItem('enrollments');
+        localStorage.removeItem('course');
+        localStorage.removeItem('member');
+        localStorage.removeItem('Registration');
         localStorage.removeItem(this.UPDATE_TIME_KEY);
         console.log('已清除所有快取');
     },
