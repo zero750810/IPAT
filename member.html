@@ -80,6 +80,12 @@
                         <li class="list-inline-item"><a href="https://www.instagram.com/ipataiwan/" target="_blank"
                                 rel="noopener noreferrer"><img src="img/IG.png" alt="Instagram" class="img-fluid"
                                     style="max-width: 30px;"></a></li>
+                        <li class="list-inline-item">
+                            <a href="Backstage.html" target="_blank" rel="noopener noreferrer">
+                                <img src="img/transparent.png" alt="Backstage" class="img-fluid"
+                                    style="max-width: 30px; opacity: 0;">
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -94,21 +100,23 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
     <script src="js/firebase-data.js"></script>
+    <script src="js/member.js"></script>
 
     <script>
         // 頁面加載時獲取成員資料
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             try {
                 console.log("member.html 開始載入資料");
-                
+
                 // 確認 dataManager 是否正確初始化
                 if (!window.dataManager) {
                     console.error("dataManager 未初始化");
                     alert("資料管理器初始化失敗，請重新載入頁面");
                     return;
                 }
-                
+
                 const membersData = await window.dataManager.getMembers();
+                console.log(membersData);
                 renderMembers(membersData);
             } catch (error) {
                 console.error('載入成員資料時出錯:', error);
@@ -119,7 +127,7 @@
         function renderMembers(members) {
             const membersContainer = document.getElementById('members');
             membersContainer.innerHTML = '';
-            
+
             if (!members || members.length === 0) {
                 membersContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有可用的成員資訊</p></div>';
                 return;
@@ -127,27 +135,30 @@
 
             // 按職稱排序 - 先排領導職位
             const positionOrder = {
-                '會長': 1,
-                '理事長': 2,
-                '副理事長': 3,
-                '理事': 4,
-                '監事': 5
+                '理事長': 1,
+                '秘書長': 2,
+                '顧問': 3,
+                '常務監事': 4,
+                '常務理事': 5,
+                '理事': 6,
+                '監事': 7,
+                '會員': 8
             };
 
             const sortedMembers = [...members].sort((a, b) => {
                 // 如果是數組形式的標籤，取第一個標籤作為主要職稱
                 const tagA = Array.isArray(a.tag) ? a.tag[0] : a.tag;
                 const tagB = Array.isArray(b.tag) ? b.tag[0] : b.tag;
-                
+
                 const orderA = positionOrder[tagA] || 99;
                 const orderB = positionOrder[tagB] || 99;
-                
+
                 return orderA - orderB;
             });
 
             sortedMembers.forEach(member => {
                 // 檢查成員是否有職稱標籤
-                let title = '成員';
+                let title = '會員';
                 if (member.tag) {
                     if (Array.isArray(member.tag)) {
                         title = member.tag.join('、');
@@ -161,18 +172,18 @@
                 memberDiv.innerHTML = `
                     <div class="card">
                         <div class="row g-0">
-                            <div class="col-md-2">
+                            <div class="col-md-1">
                                 </div>
                             <div class="col-md-3">
-                                <img src="${member.image || 'img/member-default.jpg'}" class="img-fluid rounded-start" alt="${member.name || '無姓名'}">
+                               <img src="img/member/${member.id}.jpg" class="img-fluid rounded-start" alt="${member.name || '無姓名'}">
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-7">
                                 <div class="card-body">
                                     <h5 class="card-title">${member.name || '無姓名'} - ${title}</h5>
                                     <p class="card-text">${member.introduction || '無簡介'}</p>
                                 </div>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-1">
                                 </div>
                         </div>
                     </div>

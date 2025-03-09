@@ -43,15 +43,18 @@
         <div class="container">
             <h2 class="text-center text-warning mb-4">課程須知</h2>
             <p>歡迎加入我們遊戲學習的行列，為了讓您學習順利，請仔細閱讀下方條款，並熟悉學習規範：</p>
-            
+
             <div class="accordion mb-5" id="courseAccordion">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button collapsed bg-primary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        <button class="accordion-button collapsed bg-primary text-white" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false"
+                            aria-controls="collapseOne">
                             課程通知及未開成班通知
                         </button>
                     </h2>
-                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#courseAccordion">
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+                        data-bs-parent="#courseAccordion">
                         <div class="accordion-body">
                             <ol>
                                 <li>本會課程皆以能開成班為前提，如無特殊狀況，最遲於開課前2至3天於本會網站公告上課時間與地點，不另行電話通知，敬請密切注意本會官網公告。
@@ -64,11 +67,14 @@
                 </div>
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button collapsed bg-primary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        <button class="accordion-button collapsed bg-primary text-white" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false"
+                            aria-controls="collapseTwo">
                             課程異動通知
                         </button>
                     </h2>
-                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#courseAccordion">
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                        data-bs-parent="#courseAccordion">
                         <div class="accordion-body">
                             <ol>
                                 <li>本會保留調整、修訂課程時間、上課地點及老師之權利，如不得已須異動時，異動資訊將在開課前2至3天公布至本會網站。</li>
@@ -79,18 +85,21 @@
                 </div>
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingThree">
-                        <button class="accordion-button collapsed bg-primary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        <button class="accordion-button collapsed bg-primary text-white" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false"
+                            aria-controls="collapseThree">
                             報名及退費
                         </button>
                     </h2>
-                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#courseAccordion">
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
+                        data-bs-parent="#courseAccordion">
                         <div class="accordion-body">
                             <ol>
                                 <li>報名時請以ATM轉帳<br>
                                     戶名:國際遊戲協會台灣分會<br>
                                     銀行代號： 007<br>
                                     帳號：17610028630<br>
-                                    轉帳後請來電告知您的大名及帳號後5碼。                                    
+                                    轉帳後請來電告知您的大名及帳號後5碼。
                                 </li>
                                 <li>開課前二週取消上課退費者，退還已繳費用95%。開課前一週取消上課退費者，退還已繳費用75%。開課前5日內因須於課前備妥材料恕不退費。</li>
                                 <li>無論退費原因為何，退費時，本會將扣除應退費總金額2%之ATM轉帳手續費。</li>
@@ -101,11 +110,14 @@
                 </div>
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingFour">
-                        <button class="accordion-button collapsed bg-primary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                        <button class="accordion-button collapsed bg-primary text-white" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false"
+                            aria-controls="collapseFour">
                             其他注意事項
                         </button>
                     </h2>
-                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#courseAccordion">
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour"
+                        data-bs-parent="#courseAccordion">
                         <div class="accordion-body">
                             <ol>
                                 <li>上課時手機請關靜音，若需接聽電話時請到教室外，避免干擾課程進行。</li>
@@ -118,17 +130,18 @@
             </div>
 
             <h2 class="text-center text-warning mb-4">最新課程</h2>
-            <div class="col-md-12">                    
+            <div class="col-md-12">
                 <div class="row" id="course-container">
                     <!-- 這裡的內容將由 JavaScript 動態生成 -->
                 </div>
-            </div>           
+            </div>
         </div>
     </section>
 
     <!-- 課程詳情 Modal -->
-    <div class="modal fade" id="courseDetailModal" tabindex="-1" aria-labelledby="courseDetailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade" id="courseDetailModal" tabindex="-1" aria-labelledby="courseDetailModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="courseDetailModalLabel">課程詳情</h5>
@@ -171,10 +184,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="participants" class="form-label">報名人數</label>
-                            <input type="number" class="form-control" id="participants" name="participants" min="1" value="1" onchange="calculateTotal()">
+                            <input type="number" class="form-control" id="participants" name="participants" min="1"
+                                value="1" onchange="calculateTotal()">
                         </div>
                         <div class="mb-3">
-                            <label for="totalFee" class="form-label">費用計算</label>
+                            <label for="totalFee" class="form-label">費用試算</label>
                             <input type="text" class="form-control" id="totalFee" readonly>
                         </div>
                     </form>
@@ -211,22 +225,23 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
     <script src="js/firebase-data.js"></script>
+    <script src="js/course.js"></script>
 
     <script>
         let currentCourse = null;
 
         // 頁面加載時獲取課程資料
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             try {
                 console.log("course.html 開始載入資料");
-                
+
                 // 確認 dataManager 是否正確初始化
                 if (!window.dataManager) {
                     console.error("dataManager 未初始化");
                     alert("資料管理器初始化失敗，請重新載入頁面");
                     return;
                 }
-                
+
                 const coursesData = await window.dataManager.getCourses();
                 renderCourses(coursesData);
             } catch (error) {
@@ -249,7 +264,6 @@
                 courseCard.className = 'col-md-3 mb-4';
                 courseCard.innerHTML = `
                     <div class="card h-100" style="cursor: pointer;" onclick="showCourseDetail('${course.id}')">
-                        <img src="${course.image || 'img/course-default.jpg'}" class="card-img-top" alt="${course.title}">
                         <div class="card-body">
                             <h5 class="card-title">${course.title || '無標題'}</h5>
                             <p class="card-text">
@@ -263,13 +277,66 @@
                 courseContainer.appendChild(courseCard);
             });
         }
+        // 格式化課程時間
+        function formatCourseTime(course) {
+            // 如果有 time 或 date 屬性，優先使用
+            if (course.time) return course.time;
+            if (course.date) return course.date;
+
+            // 如果有 startdate 和 enddate
+            if (course.startdate && course.enddate) {
+                let startDate, endDate;
+
+                // 處理不同的日期格式
+                if (typeof course.startdate === 'string') {
+                    startDate = new Date(course.startdate);
+                } else if (course.startdate.toDate) {
+                    // Firestore Timestamp
+                    startDate = course.startdate.toDate();
+                } else {
+                    startDate = new Date(course.startdate);
+                }
+
+                if (typeof course.enddate === 'string') {
+                    endDate = new Date(course.enddate);
+                } else if (course.enddate.toDate) {
+                    // Firestore Timestamp
+                    endDate = course.enddate.toDate();
+                } else {
+                    endDate = new Date(course.enddate);
+                }
+
+                // 格式化日期
+                const formatDate = (date) => {
+                    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+                };
+
+                // 格式化時間
+                const formatTime = (date) => {
+                    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                };
+
+                // 檢查是否同一天
+                const isSameDay = startDate.getFullYear() === endDate.getFullYear() &&
+                    startDate.getMonth() === endDate.getMonth() &&
+                    startDate.getDate() === endDate.getDate();
+
+                if (isSameDay) {
+                    return `${formatDate(startDate)} ${formatTime(startDate)}~${formatTime(endDate)}`;
+                } else {
+                    return `${formatDate(startDate)} ${formatTime(startDate)}~${formatDate(endDate)} ${formatTime(endDate)}`;
+                }
+            }
+
+            return '無資料';
+        }
 
         // 顯示課程詳情
         async function showCourseDetail(courseId) {
             try {
                 const courses = await window.dataManager.getCourses();
                 currentCourse = courses.find(c => c.id === courseId);
-                
+
                 if (!currentCourse) {
                     console.error('找不到指定課程:', courseId);
                     return;
@@ -277,27 +344,33 @@
 
                 const modalTitle = document.getElementById('courseDetailModalLabel');
                 const modalContent = document.getElementById('courseDetailContent');
-                
+
                 modalTitle.textContent = currentCourse.title || '未命名課程';
                 modalContent.innerHTML = `
                     <div class="row">
-                        <div class="col-md-6">
-                            <img src="${currentCourse.image || 'img/course-default.jpg'}" class="img-fluid" alt="${currentCourse.title}">
-                        </div>
-                        <div class="col-md-6">
-                            <h5>課程資訊</h5>
-                            <p><strong>授課教師:</strong> ${currentCourse.teacher || '未指定'}</p>
-                            <p><strong>上課時間:</strong> ${currentCourse.time || '未指定'}</p>
-                            <p><strong>課程費用:</strong> NT＄${currentCourse.price || 0}</p>
-                            <p><strong>上課地點:</strong> ${currentCourse.location || '未指定'}</p>
+                    <div id="course-image-container" class="col-md-12 mb-3" style="display: none;">
+                        <!-- 圖片將在下方動態添加 -->
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <strong>授課教師：</strong><br>${currentCourse.teacher || '無資料'}
+                            </div>                            
+                            <div class="col-md-2">
+                                <strong>課程費用：</strong><br>${currentCourse.price || '無資料'}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>上課時間：</strong><br>${formatCourseTime(currentCourse)}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>上課地點：</strong><br>${currentCourse.add || '無資料'}
+                            </div>
                         </div>
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h5>課程簡介</h5>
-                            <p>${currentCourse.description || '無課程簡介'}</p>
-                        </div>
+                    <div class="col-md-12 mt-3">
+                        <p>${currentCourse.content || '無課程描述'}</p>
                     </div>
+                </div>
                 `;
 
                 const modal = new bootstrap.Modal(document.getElementById('courseDetailModal'));
@@ -308,20 +381,20 @@
         }
 
         // 報名課程按鈕點擊事件
-        document.getElementById('enrollCourseBtn').addEventListener('click', function() {
+        document.getElementById('enrollCourseBtn').addEventListener('click', function () {
             if (!currentCourse) return;
-            
+
             // 關閉課程詳情 Modal
             const courseDetailModal = bootstrap.Modal.getInstance(document.getElementById('courseDetailModal'));
             courseDetailModal.hide();
-            
+
             // 設置報名表單的課程相關資訊
             document.getElementById('courseId').value = currentCourse.id;
             document.getElementById('courseName').value = currentCourse.title;
-            
+
             // 計算初始費用
             calculateTotal();
-            
+
             // 顯示報名表單 Modal
             const enrollModal = new bootstrap.Modal(document.getElementById('enrollModal'));
             enrollModal.show();
@@ -337,13 +410,13 @@
         // 提交報名表單
         function submitEnrollment() {
             const enrollForm = document.getElementById('enrollForm');
-            
+
             // 表單驗證
             if (!enrollForm.checkValidity()) {
                 enrollForm.reportValidity();
                 return;
             }
-            
+
             const formData = {
                 courseId: document.getElementById('courseId').value,
                 courseName: document.getElementById('courseName').value,
@@ -357,19 +430,19 @@
                 teacher: currentCourse?.teacher || '',
                 updatetime: firebase.firestore.FieldValue.serverTimestamp()
             };
-            
+
             // 儲存到 Firebase
             window.db.collection('Registration').add(formData)
                 .then((docRef) => {
                     console.log('報名成功，文件ID:', docRef.id);
-                    
+
                     // 關閉報名表單 Modal
                     const enrollModal = bootstrap.Modal.getInstance(document.getElementById('enrollModal'));
                     enrollModal.hide();
-                    
+
                     // 清空表單
                     document.getElementById('enrollForm').reset();
-                    
+
                     // 顯示成功訊息
                     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
                     successModal.show();
@@ -418,6 +491,12 @@
                         <li class="list-inline-item"><a href="https://www.instagram.com/ipataiwan/" target="_blank"
                                 rel="noopener noreferrer"><img src="img/IG.png" alt="Instagram" class="img-fluid"
                                     style="max-width: 30px;"></a></li>
+                        <li class="list-inline-item">
+                            <a href="Backstage.html" target="_blank" rel="noopener noreferrer">
+                                <img src="img/transparent.png" alt="Backstage" class="img-fluid"
+                                    style="max-width: 30px; opacity: 0;">
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>

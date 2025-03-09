@@ -85,7 +85,8 @@
     </section>
 
     <!-- 新聞詳情模態框 -->
-    <div class="modal fade" id="newsDetailModal" tabindex="-1" aria-labelledby="newsDetailModalLabel" aria-hidden="true">
+    <div class="modal fade" id="newsDetailModal" tabindex="-1" aria-labelledby="newsDetailModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -103,8 +104,9 @@
     </div>
 
     <!-- 課程詳情模態框 -->
-    <div class="modal fade" id="courseDetailModal" tabindex="-1" aria-labelledby="courseDetailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade" id="courseDetailModal" tabindex="-1" aria-labelledby="courseDetailModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="courseDetailModalLabel">課程詳情</h5>
@@ -141,7 +143,7 @@
                                 class="text-white">ipat1071001@ipat.org.tw</a></li>
                     </ul>
 
-                    
+
                 </div>
                 <div class="col-lg-4 text-center mb-3">
                     <ul class="list-inline">
@@ -159,6 +161,12 @@
                         <li class="list-inline-item"><a href="https://www.instagram.com/ipataiwan/" target="_blank"
                                 rel="noopener noreferrer"><img src="img/IG.png" alt="Instagram" class="img-fluid"
                                     style="max-width: 30px;"></a></li>
+                        <li class="list-inline-item">
+                            <a href="Backstage.html" target="_blank" rel="noopener noreferrer">
+                                <img src="img/transparent.png" alt="Backstage" class="img-fluid"
+                                    style="max-width: 30px; opacity: 0;">
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -177,54 +185,108 @@
 
     <script>
         // 頁面加載時從 Firebase 獲取最新消息和課程資料
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             try {
                 console.log("index.html 開始載入資料");
-                
+
                 // 確認 dataManager 是否正確初始化
                 if (!window.dataManager) {
                     console.error("dataManager 未初始化");
                     alert("資料管理器初始化失敗，請重新載入頁面");
                     return;
                 }
-                
+
                 // 獲取最新消息
                 const newsData = await window.dataManager.getNews();
                 updateNewsSection(newsData);
-                
+
                 // 獲取課程資料
                 const coursesData = await window.dataManager.getCourses();
-                console.log("coursesData",coursesData);
+                console.log("coursesData", coursesData);
                 updateCoursesSection(coursesData);
             } catch (error) {
                 console.error('載入資料時出錯:', error);
             }
         });
-        
+
+        // 格式化課程時間
+        function formatCourseTime(course) {
+            // 如果有 time 或 date 屬性，優先使用
+            if (course.time) return course.time;
+            if (course.date) return course.date;
+
+            // 如果有 startdate 和 enddate
+            if (course.startdate && course.enddate) {
+                let startDate, endDate;
+
+                // 處理不同的日期格式
+                if (typeof course.startdate === 'string') {
+                    startDate = new Date(course.startdate);
+                } else if (course.startdate.toDate) {
+                    // Firestore Timestamp
+                    startDate = course.startdate.toDate();
+                } else {
+                    startDate = new Date(course.startdate);
+                }
+
+                if (typeof course.enddate === 'string') {
+                    endDate = new Date(course.enddate);
+                } else if (course.enddate.toDate) {
+                    // Firestore Timestamp
+                    endDate = course.enddate.toDate();
+                } else {
+                    endDate = new Date(course.enddate);
+                }
+
+                // 格式化日期
+                const formatDate = (date) => {
+                    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+                };
+
+                // 格式化時間
+                const formatTime = (date) => {
+                    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                };
+
+                // 檢查是否同一天
+                const isSameDay = startDate.getFullYear() === endDate.getFullYear() &&
+                    startDate.getMonth() === endDate.getMonth() &&
+                    startDate.getDate() === endDate.getDate();
+
+                if (isSameDay) {
+                    return `${formatDate(startDate)} ${formatTime(startDate)}~${formatTime(endDate)}`;
+                } else {
+                    return `${formatDate(startDate)} ${formatTime(startDate)}~${formatDate(endDate)} ${formatTime(endDate)}`;
+                }
+            }
+
+            return '無資料';
+        }
+
         // 更新最新消息區域
         function updateNewsSection(newsItems) {
             const newsContainer = document.getElementById('news-container');
             if (!newsContainer) return;
-            
+
             newsContainer.innerHTML = ''; // 清空現有內容
-            
+
             if (!newsItems || newsItems.length === 0) {
                 newsContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有最新消息</p></div>';
                 return;
             }
-            
+
             // 只顯示最新的 6 條消息
             const latestNews = newsItems.slice(0, 6);
-            
+
             // 儲存新聞數據供模態框使用
             window.allNewsItems = newsItems;
-            
+
             latestNews.forEach((news, index) => {
                 // 格式化日期顯示
                 let dateDisplay = '無日期';
                 if (news.updatetime) {
-                    const date = typeof news.updatetime === 'number' 
-                        ? new Date(news.updatetime) 
+                    const date = typeof news.updatetime === 'number'
+                        ? new Date(news.updatetime)
                         : new Date(news.updatetime);
                     dateDisplay = date.toLocaleDateString('zh-TW', {
                         year: 'numeric',
@@ -232,71 +294,70 @@
                         day: 'numeric'
                     });
                 }
-                
+
                 const newsDiv = document.createElement('div');
                 newsDiv.className = 'col-md-4 mb-4';
                 newsDiv.innerHTML = `
                     <div class="card h-100" style="cursor: pointer;" onclick="showNewsDetail(${index})">
                         <div class="card-body">
                             <h5 class="card-title">${news.title || '無標題'}</h5>
-                            <p class="card-text">${news.content ? news.content.substring(0, 100) + (news.content.length > 100 ? '...' : '') : '無內容'}</p>
+                            <p class="card-text">${news.content ? news.content.substring(0, 20) + (news.content.length > 20 ? '...' : '') : '無內容'}</p>
                         </div>
                         <div class="card-footer">
-                            <small class="text-muted">${dateDisplay}</small>
+                            <small class="text-muted">更新時間：${dateDisplay}</small>
                         </div>
                     </div>
                 `;
                 newsContainer.appendChild(newsDiv);
             });
         }
-        
+
         // 更新課程區域
         function updateCoursesSection(coursesItems) {
             const coursesContainer = document.getElementById('courses-container');
             if (!coursesContainer) return;
-            
+
             coursesContainer.innerHTML = ''; // 清空現有內容
-            
+
             if (!coursesItems || coursesItems.length === 0) {
                 coursesContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有最新課程</p></div>';
                 return;
             }
-            
+
             // 只顯示最新的 6 條課程
             const latestCourses = coursesItems.slice(0, 6);
-            
+
             // 儲存課程數據供模態框使用
             window.allCoursesItems = coursesItems;
-            
             latestCourses.forEach((course, index) => {
                 const courseDiv = document.createElement('div');
                 courseDiv.className = 'col-md-4 mb-4';
                 courseDiv.innerHTML = `
                     <div class="card h-100" style="cursor: pointer;" onclick="showCourseDetail(${index})">
-                        <img src="${course.image || 'img/course-default.jpg'}" class="card-img-top" alt="${course.title || '無標題'}">
                         <div class="card-body">
                             <h5 class="card-title">${course.title || '無標題'}</h5>
-                            <p class="card-text">${course.description ? course.description.substring(0, 80) + (course.description.length > 80 ? '...' : '') : '無課程描述'}</p>
-                        </div>
-                        <div class="card-footer">
-                            <small class="text-muted">${course.teacher ? '教師: ' + course.teacher : ''}</small>
+                            <p class="card-text">
+                                <small class="text-muted">授課教師: ${course.teacher || '未指定'}</small><br>
+                                <small class="text-muted">上課時間: ${course.time || '未指定'}</small><br>
+                                <small class="text-muted">課程費用: NT＄${course.price || 0}</small>
+                            </p>
                         </div>
                     </div>
                 `;
                 coursesContainer.appendChild(courseDiv);
             });
         }
-        
+
         // 顯示新聞詳情模態框
         function showNewsDetail(index) {
             const news = window.allNewsItems[index];
             if (!news) return;
-            
+
             // 格式化日期顯示
             let dateDisplay = '無日期';
             if (news.updatetime) {
-                const date = typeof news.updatetime === 'number' 
-                    ? new Date(news.updatetime) 
+                const date = typeof news.updatetime === 'number'
+                    ? new Date(news.updatetime)
                     : new Date(news.updatetime);
                 dateDisplay = date.toLocaleDateString('zh-TW', {
                     year: 'numeric',
@@ -304,10 +365,10 @@
                     day: 'numeric'
                 });
             }
-            
+
             // 設置模態框標題和內容
             document.getElementById('newsDetailModalLabel').textContent = news.title || '無標題';
-            
+
             const modalContent = document.getElementById('newsDetailContent');
             modalContent.innerHTML = `
                 <div class="row">
@@ -323,14 +384,14 @@
                     </div>
                 </div>
             `;
-            
+
             // 嘗試從 Firebase Storage 獲取圖片
             if (news.id) {
                 const imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.appspot.com/o/news%2F${news.id}.webp?alt=media`;
                 const img = new Image();
                 const imageContainer = document.getElementById('news-image-container');
-                
-                img.onload = function() {
+
+                img.onload = function () {
                     // 圖片載入成功時顯示
                     img.className = 'img-fluid';
                     img.alt = news.title || '新聞圖片';
@@ -338,50 +399,79 @@
                     imageContainer.appendChild(img);
                     imageContainer.style.display = 'block';
                 };
-                
-                img.onerror = function() {
+
+                img.onerror = function () {
                     // 圖片載入失敗時隱藏容器
                     console.log(`無法載入新聞 ${news.id} 的圖片`);
                     imageContainer.style.display = 'none';
                 };
-                
+
                 img.src = imageUrl;
             }
-            
+
             // 顯示模態框
             new bootstrap.Modal(document.getElementById('newsDetailModal')).show();
         }
-        
+
         // 顯示課程詳情模態框
         function showCourseDetail(index) {
             const course = window.allCoursesItems[index];
             if (!course) return;
-            
+
             // 設置模態框標題和內容
             document.getElementById('courseDetailModalLabel').textContent = course.title || '無標題';
-            
+
             const modalContent = document.getElementById('courseDetailContent');
             modalContent.innerHTML = `
                 <div class="row">
-                    <div class="col-md-5 mb-3">
-                        <img src="${course.image || 'img/course-default.jpg'}" alt="${course.title || '無標題'}" class="img-fluid">
+                    <div id="course-image-container" class="col-md-12 mb-3" style="display: none;">
+                        <!-- 圖片將在下方動態添加 -->
                     </div>
-                    <div class="col-md-7">
-                        <h5>課程資訊</h5>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><strong>授課教師：</strong> ${course.teacher || '無資料'}</li>
-                            <li class="list-group-item"><strong>上課時間：</strong> ${course.time || '無資料'}</li>
-                            <li class="list-group-item"><strong>課程費用：</strong> ${course.price || '無資料'}</li>
-                            <li class="list-group-item"><strong>上課地點：</strong> ${course.location || '無資料'}</li>
-                        </ul>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <strong>授課教師：</strong><br>${course.teacher || '無資料'}
+                            </div>                            
+                            <div class="col-md-2">
+                                <strong>課程費用：</strong><br>${course.price || '無資料'}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>上課時間：</strong><br>${formatCourseTime(course)}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>上課地點：</strong><br>${course.add || '無資料'}
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-12 mt-3">
-                        <h5>課程簡介</h5>
-                        <p>${course.description || '無課程描述'}</p>
+                        <p>${course.content || '無課程描述'}</p>
+                        <p>＊若對此課程有興趣，請至上方課程介紹，了解完課程須知後，再於最新課程處報名。</p>
                     </div>
                 </div>
             `;
-            
+            // 嘗試從 Firebase Storage 獲取圖片
+            if (course.id) {
+                const imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.appspot.com/o/course%2F${course.id}.webp?alt=media`;
+                const img = new Image();
+                const imageContainer = document.getElementById('course-image-container');
+
+                img.onload = function () {
+                    // 圖片載入成功時顯示
+                    img.className = 'img-fluid';
+                    img.alt = course.title || '課程圖片';
+                    imageContainer.innerHTML = '';
+                    imageContainer.appendChild(img);
+                    imageContainer.style.display = 'block';
+                };
+
+                img.onerror = function () {
+                    // 圖片載入失敗時隱藏容器
+                    console.log(`無法載入新聞 ${course.id} 的圖片`);
+                    imageContainer.style.display = 'none';
+                };
+
+                img.src = imageUrl;
+            }
             // 顯示模態框
             new bootstrap.Modal(document.getElementById('courseDetailModal')).show();
         }
