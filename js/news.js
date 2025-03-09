@@ -1,13 +1,22 @@
+<<<<<<< HEAD
 // 靜態新聞數據
 const news = [
   {
     "id": "hjgtWDXUIXhelPtZ4YAk",
+=======
+const news = [
+  {
+    "id": "hjgtWDXUIXhelPtZ4YAk",
+    "description": "",
+    "image": "",
+>>>>>>> 457cfd8f1b6ba1e7a4bcbf20895e7ebd08257687
     "title": "測試訊息",
     "content": "這是內文",
     "updatetime": "2025-03-07T13:08:04.465Z"
   },
   {
     "id": "6HfF7MaY4f3X6XrI9GAW",
+<<<<<<< HEAD
     "title": "測試訊息12",
     "content": "dfsgrgesrgfd",
     "updatetime": "2025-03-07T04:40:08.304Z"
@@ -25,3 +34,20 @@ window.news = news;
 
 // 在控制台輸出確認信息
 console.log("news.js 已加載，靜態數據包含 " + news.length + " 條新聞");
+=======
+    "description": 123456,
+    "image": "img/news-default.jpg",
+    "title": "測試訊息12",
+    "content": 33333,
+    "updatetime": "2025-03-07T04:40:08.304Z"
+  },
+  {
+    "id": "hjgtWDXUIXhelPtZ4YAk",
+    "description": "",
+    "image": "",
+    "title": "測試訊息",
+    "content": "這是內文",
+    "updatetime": "2025-03-07T13:08:04.465Z"
+  }
+];
+>>>>>>> 457cfd8f1b6ba1e7a4bcbf20895e7ebd08257687
