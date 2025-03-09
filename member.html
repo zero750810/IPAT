@@ -89,49 +89,97 @@
         </div>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
+    <script src="js/firebase-data.js"></script>
+
     <script>
-        // 動態插入成員資料的範例
-        const members = [
-            {
-                name: "張三",
-                title: "教授",
-                description: "專長於教育心理學，致力於兒童遊戲研究。",
-                image: "img/member1.jpg"
-            },
-            {
-                name: "李四",
-                title: "副教授",
-                description: "專注於遊戲設計與開發，推動創新教育。",
-                image: "img/member2.jpg"
+        // 頁面加載時獲取成員資料
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                console.log("member.html 開始載入資料");
+                
+                // 確認 dataManager 是否正確初始化
+                if (!window.dataManager) {
+                    console.error("dataManager 未初始化");
+                    alert("資料管理器初始化失敗，請重新載入頁面");
+                    return;
+                }
+                
+                const membersData = await window.dataManager.getMembers();
+                renderMembers(membersData);
+            } catch (error) {
+                console.error('載入成員資料時出錯:', error);
             }
-        ];
-
-        const membersContainer = document.getElementById('members');
-        members.forEach(member => {
-            const memberDiv = document.createElement('div');
-            memberDiv.className = 'col-md-12 mb-4';
-            memberDiv.innerHTML = `
-                <div class="card">
-                    <div class="row g-0">
-                        <div class="col-md-2">
-                            </div>
-                        <div class="col-md-3">
-                            <img src="${member.image}" class="img-fluid rounded-start" alt="${member.name}">
-                        </div>
-                        <div class="col-md-5">
-                            <div class="card-body">
-                                <h5 class="card-title">${member.name} - ${member.title}</h5>
-                                <p class="card-text">${member.description}</p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-2">
-                            </div>
-                    </div>
-                </div>
-            `;
-            membersContainer.appendChild(memberDiv);
         });
+
+        // 渲染成員卡片
+        function renderMembers(members) {
+            const membersContainer = document.getElementById('members');
+            membersContainer.innerHTML = '';
+            
+            if (!members || members.length === 0) {
+                membersContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有可用的成員資訊</p></div>';
+                return;
+            }
+
+            // 按職稱排序 - 先排領導職位
+            const positionOrder = {
+                '會長': 1,
+                '理事長': 2,
+                '副理事長': 3,
+                '理事': 4,
+                '監事': 5
+            };
+
+            const sortedMembers = [...members].sort((a, b) => {
+                // 如果是數組形式的標籤，取第一個標籤作為主要職稱
+                const tagA = Array.isArray(a.tag) ? a.tag[0] : a.tag;
+                const tagB = Array.isArray(b.tag) ? b.tag[0] : b.tag;
+                
+                const orderA = positionOrder[tagA] || 99;
+                const orderB = positionOrder[tagB] || 99;
+                
+                return orderA - orderB;
+            });
+
+            sortedMembers.forEach(member => {
+                // 檢查成員是否有職稱標籤
+                let title = '成員';
+                if (member.tag) {
+                    if (Array.isArray(member.tag)) {
+                        title = member.tag.join('、');
+                    } else {
+                        title = member.tag;
+                    }
+                }
+
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'col-md-12 mb-4';
+                memberDiv.innerHTML = `
+                    <div class="card">
+                        <div class="row g-0">
+                            <div class="col-md-2">
+                                </div>
+                            <div class="col-md-3">
+                                <img src="${member.image || 'img/member-default.jpg'}" class="img-fluid rounded-start" alt="${member.name || '無姓名'}">
+                            </div>
+                            <div class="col-md-5">
+                                <div class="card-body">
+                                    <h5 class="card-title">${member.name || '無姓名'} - ${title}</h5>
+                                    <p class="card-text">${member.introduction || '無簡介'}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                </div>
+                        </div>
+                    </div>
+                `;
+                membersContainer.appendChild(memberDiv);
+            });
+        }
     </script>
 </body>
 

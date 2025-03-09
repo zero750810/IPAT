@@ -209,103 +209,53 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
+    <script src="js/firebase-data.js"></script>
 
     <script>
-        // 課程資料（可以從後端 API 獲取）
-        const courses = [
-            {
-                id: 1,
-                title: "遊戲工作坊",
-                image: "img/course1.jpg",
-                teacher: "王老師",
-                time: "2025年3月15日 14:00-16:00",
-                price: 150, // 添加數值型價格，用於計算
-                location: "台北市館前路一號",
-                description: "本課程主要針對初學者，介紹基本的遊戲設計原則與實作練習。適合對遊戲設計有興趣的各年齡層學員參加。",
-                content: "課程內容包括遊戲類型介紹、遊戲設計基本元素、遊戲測試與反饋收集等。參與者將在課程中進行多種實際操作，並完成一個簡單的遊戲設計。"
-            },
-            {
-                id: 2,
-                title: "遊藝師初階班",
-                image: "img/course2.jpg",
-                teacher: "李老師",
-                time: "2025年4月5日 09:30-12:00",
-                price: 2000,
-                location: "新北市板橋區中正路435號",
-                description: "針對想成為專業遊藝師的學員，提供全面基礎培訓，包含理論學習與實務操作。",
-                content: "課程內容涵蓋遊戲與兒童發展的關係、遊藝活動設計原則、材料運用技巧、安全守則及初階帶領技巧等。完成課程後可獲得初階認證證書。"
-            },
-            {
-                id: 3,
-                title: "遊藝師中階班",
-                image: "img/course3.jpg",
-                teacher: "張老師",
-                time: "2025年5月10日 13:30-16:30",
-                price: 2500,
-                location: "台北市信義區松高路一號",
-                description: "適合已完成初階課程的學員，深入探討進階遊藝技巧與理論。",
-                content: "課程將著重於複雜遊戲設計、活動流程掌控、團體動力應用、特殊需求兒童的遊戲規劃等。學員將有機會規劃並實際帶領一場完整的遊藝活動。"
-            },
-            {
-                id: 4,
-                title: "遊藝師高階班",
-                image: "img/course4.jpg",
-                teacher: "陳老師",
-                time: "2025年6月20日 09:00-17:00",
-                price: 3500,
-                location: "新北市板橋區中正路435號",
-                description: "為已完成中階課程的專業人士設計，提供高階技能培訓。",
-                content: "課程內容包含創新遊戲開發、大型活動策劃與執行、跨文化遊戲設計、專業倫理與實務，以及遊藝教育理論的最新發展。完成課程後將獲得高階認證資格。"
-            },
-            {
-                id: 5,
-                title: "認證師資班",
-                image: "img/course5.jpg",
-                teacher: "林老師",
-                time: "2025年7月15日 09:00-17:00 (連續三天)",
-                price: 5000,
-                location: "台北市松山區敦化北路100號",
-                description: "專為有志於培訓未來遊藝師的資深專業人士設計的師資培訓課程。",
-                content: "課程將全面培養學員的教學技巧，包括課程設計、教學方法論、評量技術、學習者心理學等。參與者需完成一個完整的課程設計與示範教學，通過評核後可獲得認證師資資格。"
-            }
-        ];
-
-        // Firebase 配置
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // 初始化 Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // Google Form URL
-        const googleFormUrl = "YOUR_GOOGLE_FORM_URL";
-
         let currentCourse = null;
 
+        // 頁面加載時獲取課程資料
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                console.log("course.html 開始載入資料");
+                
+                // 確認 dataManager 是否正確初始化
+                if (!window.dataManager) {
+                    console.error("dataManager 未初始化");
+                    alert("資料管理器初始化失敗，請重新載入頁面");
+                    return;
+                }
+                
+                const coursesData = await window.dataManager.getCourses();
+                renderCourses(coursesData);
+            } catch (error) {
+                console.error('載入課程資料時出錯:', error);
+            }
+        });
+
         // 動態生成課程卡片
-        function renderCourses() {
+        function renderCourses(courses) {
             const courseContainer = document.getElementById('course-container');
             courseContainer.innerHTML = '';
+
+            if (!courses || courses.length === 0) {
+                courseContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有可用的課程資訊</p></div>';
+                return;
+            }
 
             courses.forEach(course => {
                 const courseCard = document.createElement('div');
                 courseCard.className = 'col-md-3 mb-4';
                 courseCard.innerHTML = `
-                    <div class="card h-100" style="cursor: pointer;" onclick="showCourseDetail(${course.id})">
-                        <img src="${course.image}" class="card-img-top" alt="${course.title}">
+                    <div class="card h-100" style="cursor: pointer;" onclick="showCourseDetail('${course.id}')">
+                        <img src="${course.image || 'img/course-default.jpg'}" class="card-img-top" alt="${course.title}">
                         <div class="card-body">
-                            <h5 class="card-title">${course.title}</h5>
+                            <h5 class="card-title">${course.title || '無標題'}</h5>
                             <p class="card-text">
-                                <small class="text-muted">授課教師: ${course.teacher}</small><br>
-                                <small class="text-muted">上課時間: ${course.time}</small><br>
-                                <small class="text-muted">課程費用: NT＄${course.price}</small>
+                                <small class="text-muted">授課教師: ${course.teacher || '未指定'}</small><br>
+                                <small class="text-muted">上課時間: ${course.time || '未指定'}</small><br>
+                                <small class="text-muted">課程費用: NT＄${course.price || 0}</small>
                             </p>
                         </div>
                     </div>
@@ -315,39 +265,46 @@
         }
 
         // 顯示課程詳情
-        function showCourseDetail(courseId) {
-            currentCourse = courses.find(c => c.id === courseId);
-            if (!currentCourse) return;
+        async function showCourseDetail(courseId) {
+            try {
+                const courses = await window.dataManager.getCourses();
+                currentCourse = courses.find(c => c.id === courseId);
+                
+                if (!currentCourse) {
+                    console.error('找不到指定課程:', courseId);
+                    return;
+                }
 
-            const modalTitle = document.getElementById('courseDetailModalLabel');
-            const modalContent = document.getElementById('courseDetailContent');
-            
-            modalTitle.textContent = currentCourse.title;
-            modalContent.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <img src="${currentCourse.image}" class="img-fluid" alt="${currentCourse.title}">
+                const modalTitle = document.getElementById('courseDetailModalLabel');
+                const modalContent = document.getElementById('courseDetailContent');
+                
+                modalTitle.textContent = currentCourse.title || '未命名課程';
+                modalContent.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img src="${currentCourse.image || 'img/course-default.jpg'}" class="img-fluid" alt="${currentCourse.title}">
+                        </div>
+                        <div class="col-md-6">
+                            <h5>課程資訊</h5>
+                            <p><strong>授課教師:</strong> ${currentCourse.teacher || '未指定'}</p>
+                            <p><strong>上課時間:</strong> ${currentCourse.time || '未指定'}</p>
+                            <p><strong>課程費用:</strong> NT＄${currentCourse.price || 0}</p>
+                            <p><strong>上課地點:</strong> ${currentCourse.location || '未指定'}</p>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <h5>課程資訊</h5>
-                        <p><strong>授課教師:</strong> ${currentCourse.teacher}</p>
-                        <p><strong>上課時間:</strong> ${currentCourse.time}</p>
-                        <p><strong>課程費用:</strong> NT＄${currentCourse.price}</p>
-                        <p><strong>上課地點:</strong> ${currentCourse.location}</p>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5>課程簡介</h5>
+                            <p>${currentCourse.description || '無課程簡介'}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <h5>課程簡介</h5>
-                        <p>${currentCourse.description}</p>
-                        <h5>詳細內容</h5>
-                        <p>${currentCourse.content}</p>
-                    </div>
-                </div>
-            `;
+                `;
 
-            const modal = new bootstrap.Modal(document.getElementById('courseDetailModal'));
-            modal.show();
+                const modal = new bootstrap.Modal(document.getElementById('courseDetailModal'));
+                modal.show();
+            } catch (error) {
+                console.error('獲取課程詳情時出錯:', error);
+            }
         }
 
         // 報名課程按鈕點擊事件
@@ -373,7 +330,7 @@
         // 計算總費用
         function calculateTotal() {
             const participants = parseInt(document.getElementById('participants').value) || 1;
-            const totalFee = participants * currentCourse.price;
+            const totalFee = participants * (currentCourse?.price || 0);
             document.getElementById('totalFee').value = `NT$${totalFee}`;
         }
 
@@ -393,59 +350,18 @@
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
                 email: document.getElementById('email').value,
-                participants: document.getElementById('participants').value,
+                participants: parseInt(document.getElementById('participants').value) || 1,
                 totalFee: document.getElementById('totalFee').value,
-                enrollDate: new Date().toISOString(),
-                courseTime: currentCourse.time,
-                teacher: currentCourse.teacher
+                enrollDate: firebase.firestore.FieldValue.serverTimestamp(),
+                courseTime: currentCourse?.time || '',
+                teacher: currentCourse?.teacher || '',
+                updatetime: firebase.firestore.FieldValue.serverTimestamp()
             };
-            
-            // 提交到 Google Form
-            submitToGoogleForm(formData);
             
             // 儲存到 Firebase
-            saveToFirebase(formData);
-        }
-
-        // 提交到 Google Form
-        function submitToGoogleForm(data) {
-            // 創建一個隱藏的表單來提交到 Google Form
-            const form = document.createElement('form');
-            form.action = googleFormUrl;
-            form.method = 'POST';
-            form.target = '_blank';
-            form.style.display = 'none';
-
-            // 根據 Google Form 的欄位名稱建立表單元素
-            // 注意：這裡需要根據您實際的 Google Form 欄位名稱進行調整
-            const entries = {
-                'entry.123456789': data.courseName,
-                'entry.234567890': data.name,
-                'entry.345678901': data.phone,
-                'entry.456789012': data.email,
-                'entry.567890123': data.participants,
-                'entry.678901234': data.totalFee,
-                'entry.789012345': data.enrollDate
-            };
-
-            for (const entry in entries) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = entry;
-                input.value = entries[entry];
-                form.appendChild(input);
-            }
-
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-        }
-
-        // 儲存到 Firebase
-        function saveToFirebase(data) {
-            db.collection('enrollments').add(data)
+            window.db.collection('Registration').add(formData)
                 .then((docRef) => {
-                    console.log('Document written with ID: ', docRef.id);
+                    console.log('報名成功，文件ID:', docRef.id);
                     
                     // 關閉報名表單 Modal
                     const enrollModal = bootstrap.Modal.getInstance(document.getElementById('enrollModal'));
@@ -459,13 +375,10 @@
                     successModal.show();
                 })
                 .catch((error) => {
-                    console.error('Error adding document: ', error);
+                    console.error('報名提交時出錯:', error);
                     alert('報名提交時發生錯誤，請稍後再試或聯絡管理員。');
                 });
         }
-
-        // 頁面載入時渲染課程
-        document.addEventListener('DOMContentLoaded', renderCourses);
     </script>
 
     <!-- Footer -->

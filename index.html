@@ -62,30 +62,10 @@
     <section class="bg-light py-5">
         <div class="container">
             <h2 class="text-center text-warning mb-4">最新消息</h2>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">IPAT🌟雙月論壇🌟活動預告</h5>
-                            <p class="card-text">時間:112年7月1日(星期六)9:00~12:00</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">IPAT會計帳110年度-收支決算表</h5>
-                            <p class="card-text">附件1-(直式)IPAT會計帳110年度-收支決算表PDF</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">110年8月份雙月論壇</h5>
-                            <p class="card-text">110年8月份雙月論壇兩場工作坊首度結合現場與線上雙軌同步舉辦</p>
-                        </div>
-                    </div>
+            <div class="row" id="news-container">
+                <!-- 這裡的內容將由 JavaScript 動態生成 -->
+                <div class="col-12 text-center">
+                    <p>載入中...</p>
                 </div>
             </div>
         </div>
@@ -95,42 +75,50 @@
     <section class="py-5">
         <div class="container">
             <h2 class="text-center text-warning mb-4">最新課程</h2>
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card">
-                        <img src="img/icon-1.gif" class="card-img-top" alt="Course 1">
-                        <div class="card-body">
-                            <h5 class="card-title">遊戲工作坊</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card">
-                        <img src="img/icon-2.gif" class="card-img-top" alt="Course 2">
-                        <div class="card-body">
-                            <h5 class="card-title">認證師資班</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card">
-                        <img src="img/icon-3.gif" class="card-img-top" alt="Course 3">
-                        <div class="card-body">
-                            <h5 class="card-title">遊藝師高階班</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card">
-                        <img src="img/icon-4.gif" class="card-img-top" alt="Course 4">
-                        <div class="card-body">
-                            <h5 class="card-title">遊藝師中階班</h5>
-                        </div>
-                    </div>
+            <div class="row" id="courses-container">
+                <!-- 這裡的內容將由 JavaScript 動態生成 -->
+                <div class="col-12 text-center">
+                    <p>載入中...</p>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- 新聞詳情模態框 -->
+    <div class="modal fade" id="newsDetailModal" tabindex="-1" aria-labelledby="newsDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newsDetailModalLabel">新聞詳情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="newsDetailContent">
+                    <!-- 動態填充新聞詳情 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 課程詳情模態框 -->
+    <div class="modal fade" id="courseDetailModal" tabindex="-1" aria-labelledby="courseDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="courseDetailModalLabel">課程詳情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="courseDetailContent">
+                    <!-- 動態填充課程詳情 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-dark text-white py-4">
@@ -179,6 +167,225 @@
         </div>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
+    <script src="js/firebase-data.js"></script>
+    <script src="js/news.js"></script>
+    <script src="js/course.js"></script>
+
+    <script>
+        // 頁面加載時從 Firebase 獲取最新消息和課程資料
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                console.log("index.html 開始載入資料");
+                
+                // 確認 dataManager 是否正確初始化
+                if (!window.dataManager) {
+                    console.error("dataManager 未初始化");
+                    alert("資料管理器初始化失敗，請重新載入頁面");
+                    return;
+                }
+                
+                // 獲取最新消息
+                const newsData = await window.dataManager.getNews();
+                updateNewsSection(newsData);
+                
+                // 獲取課程資料
+                const coursesData = await window.dataManager.getCourses();
+                console.log("coursesData",coursesData);
+                updateCoursesSection(coursesData);
+            } catch (error) {
+                console.error('載入資料時出錯:', error);
+            }
+        });
+        
+        // 更新最新消息區域
+        function updateNewsSection(newsItems) {
+            const newsContainer = document.getElementById('news-container');
+            if (!newsContainer) return;
+            
+            newsContainer.innerHTML = ''; // 清空現有內容
+            
+            if (!newsItems || newsItems.length === 0) {
+                newsContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有最新消息</p></div>';
+                return;
+            }
+            
+            // 只顯示最新的 6 條消息
+            const latestNews = newsItems.slice(0, 6);
+            
+            // 儲存新聞數據供模態框使用
+            window.allNewsItems = newsItems;
+            
+            latestNews.forEach((news, index) => {
+                // 格式化日期顯示
+                let dateDisplay = '無日期';
+                if (news.updatetime) {
+                    const date = typeof news.updatetime === 'number' 
+                        ? new Date(news.updatetime) 
+                        : new Date(news.updatetime);
+                    dateDisplay = date.toLocaleDateString('zh-TW', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+                
+                const newsDiv = document.createElement('div');
+                newsDiv.className = 'col-md-4 mb-4';
+                newsDiv.innerHTML = `
+                    <div class="card h-100" style="cursor: pointer;" onclick="showNewsDetail(${index})">
+                        <div class="card-body">
+                            <h5 class="card-title">${news.title || '無標題'}</h5>
+                            <p class="card-text">${news.content ? news.content.substring(0, 100) + (news.content.length > 100 ? '...' : '') : '無內容'}</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">${dateDisplay}</small>
+                        </div>
+                    </div>
+                `;
+                newsContainer.appendChild(newsDiv);
+            });
+        }
+        
+        // 更新課程區域
+        function updateCoursesSection(coursesItems) {
+            const coursesContainer = document.getElementById('courses-container');
+            if (!coursesContainer) return;
+            
+            coursesContainer.innerHTML = ''; // 清空現有內容
+            
+            if (!coursesItems || coursesItems.length === 0) {
+                coursesContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有最新課程</p></div>';
+                return;
+            }
+            
+            // 只顯示最新的 6 條課程
+            const latestCourses = coursesItems.slice(0, 6);
+            
+            // 儲存課程數據供模態框使用
+            window.allCoursesItems = coursesItems;
+            
+            latestCourses.forEach((course, index) => {
+                const courseDiv = document.createElement('div');
+                courseDiv.className = 'col-md-4 mb-4';
+                courseDiv.innerHTML = `
+                    <div class="card h-100" style="cursor: pointer;" onclick="showCourseDetail(${index})">
+                        <img src="${course.image || 'img/course-default.jpg'}" class="card-img-top" alt="${course.title || '無標題'}">
+                        <div class="card-body">
+                            <h5 class="card-title">${course.title || '無標題'}</h5>
+                            <p class="card-text">${course.description ? course.description.substring(0, 80) + (course.description.length > 80 ? '...' : '') : '無課程描述'}</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">${course.teacher ? '教師: ' + course.teacher : ''}</small>
+                        </div>
+                    </div>
+                `;
+                coursesContainer.appendChild(courseDiv);
+            });
+        }
+        
+        // 顯示新聞詳情模態框
+        function showNewsDetail(index) {
+            const news = window.allNewsItems[index];
+            if (!news) return;
+            
+            // 格式化日期顯示
+            let dateDisplay = '無日期';
+            if (news.updatetime) {
+                const date = typeof news.updatetime === 'number' 
+                    ? new Date(news.updatetime) 
+                    : new Date(news.updatetime);
+                dateDisplay = date.toLocaleDateString('zh-TW', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+            
+            // 設置模態框標題和內容
+            document.getElementById('newsDetailModalLabel').textContent = news.title || '無標題';
+            
+            const modalContent = document.getElementById('newsDetailContent');
+            modalContent.innerHTML = `
+                <div class="row">
+                    <div id="news-image-container" class="col-md-12 mb-3" style="display: none;">
+                        <!-- 圖片將在下方動態添加 -->
+                    </div>
+                    <div class="col-md-12">
+                        <p>${news.content || '無內容'}</p>
+                        ${news.description ? `<p><strong>簡介：</strong> ${news.description}</p>` : ''}
+                    </div>
+                    <div class="col-md-12 mt-3">
+                       <small class="text-muted">更新時間：${dateDisplay}</small>
+                    </div>
+                </div>
+            `;
+            
+            // 嘗試從 Firebase Storage 獲取圖片
+            if (news.id) {
+                const imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.appspot.com/o/news%2F${news.id}.webp?alt=media`;
+                const img = new Image();
+                const imageContainer = document.getElementById('news-image-container');
+                
+                img.onload = function() {
+                    // 圖片載入成功時顯示
+                    img.className = 'img-fluid';
+                    img.alt = news.title || '新聞圖片';
+                    imageContainer.innerHTML = '';
+                    imageContainer.appendChild(img);
+                    imageContainer.style.display = 'block';
+                };
+                
+                img.onerror = function() {
+                    // 圖片載入失敗時隱藏容器
+                    console.log(`無法載入新聞 ${news.id} 的圖片`);
+                    imageContainer.style.display = 'none';
+                };
+                
+                img.src = imageUrl;
+            }
+            
+            // 顯示模態框
+            new bootstrap.Modal(document.getElementById('newsDetailModal')).show();
+        }
+        
+        // 顯示課程詳情模態框
+        function showCourseDetail(index) {
+            const course = window.allCoursesItems[index];
+            if (!course) return;
+            
+            // 設置模態框標題和內容
+            document.getElementById('courseDetailModalLabel').textContent = course.title || '無標題';
+            
+            const modalContent = document.getElementById('courseDetailContent');
+            modalContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-5 mb-3">
+                        <img src="${course.image || 'img/course-default.jpg'}" alt="${course.title || '無標題'}" class="img-fluid">
+                    </div>
+                    <div class="col-md-7">
+                        <h5>課程資訊</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><strong>授課教師：</strong> ${course.teacher || '無資料'}</li>
+                            <li class="list-group-item"><strong>上課時間：</strong> ${course.time || '無資料'}</li>
+                            <li class="list-group-item"><strong>課程費用：</strong> ${course.price || '無資料'}</li>
+                            <li class="list-group-item"><strong>上課地點：</strong> ${course.location || '無資料'}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <h5>課程簡介</h5>
+                        <p>${course.description || '無課程描述'}</p>
+                    </div>
+                </div>
+            `;
+            
+            // 顯示模態框
+            new bootstrap.Modal(document.getElementById('courseDetailModal')).show();
+        }
+    </script>
 </body>
 
 </html>

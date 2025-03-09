@@ -49,15 +49,9 @@
         <section class="py-5">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-2">
-                        <h4>CATEGORIES</h4>
-                        <ul class="list-unstyled">
-                            <li><a href="#" onclick="filterNews('current')">本月消息</a></li>
-                            <li><a href="#" onclick="filterNews('past')">過往消息</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-md-10">
-                        <div id="news-list" class="list-group">
+                    <div class="col-md-12">
+                        <h2 class="text-center text-warning mb-4">最新消息</h2>
+                        <div id="news-list" class="row row-cols-1 row-cols-md-3 g-4">
                             <!-- 動態插入新聞資料 -->
                         </div>
                     </div>
@@ -65,6 +59,24 @@
             </div>
         </section>
     </main>
+
+    <!-- 新聞詳情模態框 -->
+    <div class="modal fade" id="newsDetailModal" tabindex="-1" aria-labelledby="newsDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newsDetailModalLabel">新聞詳情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="newsDetailContent">
+                    <!-- 動態插入新聞詳情 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-dark text-white py-4">
@@ -112,52 +124,147 @@
         </div>
     </footer>
 
-    <script>
-        // 動態插入新聞資料的範例
-        const newsItems = [
-            {
-                title: "IPAT🌟雙月論壇🌟活動預告",
-                date: "2025-02-25",
-                description: "時間:112年7月1日(星期六)9:00~12:00",
-                image: "img/news1.jpg"
-            },
-            {
-                title: "IPAT會計帳110年度-收支決算表",
-                date: "2023-04-22",
-                description: "附件1-(直式)IPAT會計帳110年度-收支決算表PDF",
-                image: "img/news2.jpg"
-            }
-        ];
+    <!-- Firebase SDK -->
+    <script src="js/news.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
+    <script src="js/firebase-data.js"></script>
 
-        function filterNews(type) {
+    <script>
+        // 使用 DataManager 獲取新聞資料
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                console.log("news.html 開始載入資料");
+                
+                // 確認 dataManager 是否正確初始化
+                if (!window.dataManager) {
+                    console.error("dataManager 未初始化");
+                    alert("資料管理器初始化失敗，請重新載入頁面");
+                    return;
+                }
+                
+                const newsData = await window.dataManager.getNews();
+                console.log("獲取到新聞資料:", newsData);
+                
+                // 顯示所有新聞（已按updatetime排序）
+                displayNewsCards(newsData);
+            } catch (error) {
+                console.error('載入新聞資料時出錯:', error);
+            }
+        });
+
+        // 顯示新聞卡片
+        function displayNewsCards(newsItems) {
             const newsList = document.getElementById('news-list');
             newsList.innerHTML = '';
-            const currentDate = new Date();
-            newsItems.forEach(news => {
-                const newsDate = new Date(news.date);
-                const isCurrentMonth = newsDate.getMonth() === currentDate.getMonth() && newsDate.getFullYear() === currentDate.getFullYear();
-                if ((type === 'current' && isCurrentMonth) || (type === 'past' && !isCurrentMonth)) {
-                    const newsItem = document.createElement('div');
-                    newsItem.className = 'list-group-item mb-4';
-                    newsItem.innerHTML = `
-                        <div class="row">
-                            <div class="col-md-2">
-                                <img src="${news.image}" class="img-fluid" alt="${news.title}">
-                            </div>
-                            <div class="col-md-10">
-                                <h5>${news.title}</h5>
-                                <p>${news.description}</p>
-                                <small class="text-muted">${news.date}</small>
-                            </div>
-                        </div>
-                    `;
-                    newsList.appendChild(newsItem);
-                }
-            });
-        }
 
-        // 預設顯示本月消息
-        filterNews('current');
+            if (!newsItems || newsItems.length === 0) {
+                newsList.innerHTML = '<div class="col-12 text-center"><p>沒有可用的新聞資訊</p></div>';
+                return;
+            }
+
+            // 為每條新聞創建卡片
+            newsItems.forEach((news, index) => {
+                // 格式化日期顯示
+                let dateDisplay = '無日期';
+                if (news.updatetime) {
+                    const date = typeof news.updatetime === 'number' 
+                        ? new Date(news.updatetime) 
+                        : new Date(news.updatetime);
+                    dateDisplay = date.toLocaleDateString('zh-TW', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+                
+                const newsCard = document.createElement('div');
+                newsCard.className = 'col';
+                newsCard.innerHTML = `
+                    <div class="card h-100" style="cursor: pointer;" onclick="showNewsDetail(${index})">
+                        <div class="card-body">
+                            <h5 class="card-title">${news.title || '無標題'}</h5>
+                            <p class="card-text text-muted">${news.content ? news.content.substring(0, 20) + (news.content.length > 20 ? '...' : '') : '點擊查看詳情'}</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">${dateDisplay}</small>
+                        </div>
+                    </div>
+                `;
+                newsList.appendChild(newsCard);
+            });
+            
+            // 儲存新聞數據供模態框使用
+            window.allNewsItems = newsItems;
+        }
+        
+        // 顯示新聞詳情模態框
+        function showNewsDetail(index) {
+            const news = window.allNewsItems[index];
+            if (!news) return;
+            
+            // 格式化日期顯示
+            let dateDisplay = '無日期';
+            if (news.updatetime) {
+                const date = typeof news.updatetime === 'number' 
+                    ? new Date(news.updatetime) 
+                    : new Date(news.updatetime);
+                dateDisplay = date.toLocaleDateString('zh-TW', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+            
+            // 設置模態框標題和內容
+            document.getElementById('newsDetailModalLabel').textContent = news.title || '無標題';
+            
+            const modalContent = document.getElementById('newsDetailContent');
+            
+            // 先顯示除圖片外的內容
+            modalContent.innerHTML = `
+                <div class="row">
+                    <div id="news-image-container" class="col-md-12" style="display: none;">
+                        <!-- 圖片將在下方動態添加 -->
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <p>${news.content || '無內容'}</p>
+                        ${news.description ? `<p><strong>簡介：</strong> ${news.description}</p>` : ''}
+                    </div>
+                    <div class="col-md-12">
+                       <small class="text-muted">更新時間：${dateDisplay}</small>
+                    </div>
+                </div>
+            `;
+            
+            // 嘗試從 Firebase Storage 獲取圖片
+            if (news.id) {
+                const imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.appspot.com/o/news%2F${news.id}.webp?alt=media`;
+                const img = new Image();
+                const imageContainer = document.getElementById('news-image-container');
+                
+                img.onload = function() {
+                    // 圖片載入成功時顯示
+                    img.className = 'img-fluid';
+                    img.alt = news.title || '新聞圖片';
+                    imageContainer.innerHTML = '';
+                    imageContainer.appendChild(img);
+                    imageContainer.style.display = 'block';
+                };
+                
+                img.onerror = function() {
+                    // 圖片載入失敗時隱藏容器
+                    console.log(`無法載入新聞 ${news.id} 的圖片`);
+                    imageContainer.style.display = 'none';
+                };
+                
+                img.src = imageUrl;
+            }
+            
+            // 顯示模態框
+            new bootstrap.Modal(document.getElementById('newsDetailModal')).show();
+        }
     </script>
 </body>
 
