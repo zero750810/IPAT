@@ -17,7 +17,7 @@ let auth, db;
 try {
     if (!firebase.apps.length) {
         console.log("初始化 Firebase 應用");
-        firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
     }
     auth = firebase.auth();
     db = firebase.firestore();
@@ -353,13 +353,13 @@ const CacheManager = {
 
             // 檢查是否有快取
             if (this.hasCache('news')) {
-                // 從資料庫中獲取新的資料
+                    // 從資料庫中獲取新的資料
                 const snapshot = await window.db.collection('news')
-                    .orderBy('updatetime', 'desc')
-                    .get();
-
-                // 如果有新資料，更新快取
-                if (!snapshot.empty) {
+                        .orderBy('updatetime', 'desc')
+                        .get();
+                    
+                    // 如果有新資料，更新快取
+                    if (!snapshot.empty) {
                     // 將快取後的資料按時間戳過濾
                     const newData = snapshot.docs
                         .filter(doc => {
@@ -382,7 +382,7 @@ const CacheManager = {
 
                         // 按時間排序
                         mergedData.sort((a, b) => b.updatetime - a.updatetime);
-
+                        
                         // 更新快取
                         this.saveToCache('news', mergedData);
 
@@ -399,25 +399,25 @@ const CacheManager = {
             } else {
                 // 沒有快取，從資料庫取得最新10筆資料
                 const snapshot = await window.db.collection('news')
-                    .orderBy('updatetime', 'desc')
-                    .limit(10)
-                    .get();
-
-                const newsData = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
+                .orderBy('updatetime', 'desc')
+                .limit(10)
+                .get();
+            
+            const newsData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
                     updatetime: doc.data().updatetime ?
                         doc.data().updatetime.toDate().getTime() : currentTime
-                }));
-
-                // 儲存到快取
-                this.saveToCache('news', newsData);
+            }));
+            
+            // 儲存到快取
+            this.saveToCache('news', newsData);
 
                 // 更新時間戳
                 this.setLastUpdateTime('news', currentTime);
 
                 console.log(`新聞: 首次載入 ${newsData.length} 條記錄`);
-                return newsData;
+            return newsData;
             }
         } catch (error) {
             console.error('獲取最新消息失敗：', error);
@@ -444,11 +444,11 @@ const CacheManager = {
 
             // 檢查是否有快取
             if (this.hasCache('course')) {
-                // 從資料庫中獲取新的資料
+                    // 從資料庫中獲取新的資料
                 const snapshot = await window.db.collection('course')
-                    .orderBy('updatetime', 'desc')
-                    .get();
-
+                        .orderBy('updatetime', 'desc')
+                        .get();
+                    
                 // 將快取後的資料按時間戳過濾
                 const newData = snapshot.docs
                     .filter(doc => {
@@ -457,8 +457,8 @@ const CacheManager = {
                         return updateTime > lastUpdateTime;
                     })
                     .map(doc => ({
-                        id: doc.id,
-                        ...doc.data(),
+                            id: doc.id,
+                            ...doc.data(),
                         updatetime: doc.data().updatetime ?
                             doc.data().updatetime.toDate().getTime() : currentTime
                     }));
@@ -471,34 +471,34 @@ const CacheManager = {
 
                     // 按時間排序
                     mergedData.sort((a, b) => b.updatetime - a.updatetime);
-
-                    // 更新快取
+                        
+                        // 更新快取
                     this.saveToCache('course', mergedData);
 
                     // 更新時間戳
                     this.setLastUpdateTime('course', currentTime);
 
                     console.log(`課程: 已同步 ${newData.length} 條記錄`);
-                    return mergedData;
-                }
-
+                        return mergedData;
+                    }
+                    
                 console.log('課程: 沒有新資料');
                 return this.getFromCache('course').data;
             } else {
                 // 沒有快取，從資料庫取得最新10筆資料
                 const snapshot = await window.db.collection('course')
-                    .orderBy('updatetime', 'desc')
-                    .limit(10)
-                    .get();
-
+                .orderBy('updatetime', 'desc')
+                .limit(10)
+                .get();
+            
                 const courseData = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
+                id: doc.id,
+                ...doc.data(),
                     updatetime: doc.data().updatetime ?
                         doc.data().updatetime.toDate().getTime() : currentTime
-                }));
-
-                // 儲存到快取
+            }));
+            
+            // 儲存到快取
                 this.saveToCache('course', courseData);
 
                 // 更新時間戳
@@ -578,12 +578,12 @@ const CacheManager = {
             } else {
                 // 沒有快取，從資料庫取得所有資料
                 const snapshot = await window.db.collection('member')
-                    .orderBy('name')
-                    .get();
-
+                .orderBy('name')
+                .get();
+            
                 const memberData = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
+                id: doc.id,
+                ...doc.data(),
                     updatetime: doc.data().updatetime ?
                         doc.data().updatetime.toDate().getTime() : currentTime
                 }));
@@ -626,7 +626,7 @@ const CacheManager = {
                 .where('updatetime', '>', new Date(lastUpdateTime))
                 .orderBy('updatetime', 'desc')
                 .get();
-
+            
             if (snapshot.empty) {
                 console.log('刪除日誌: 沒有新記錄');
                 return;
