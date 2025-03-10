@@ -238,6 +238,7 @@
                         <p>${news.content || '無內容'}</p>
                         ${news.description ? `<p><strong>簡介：</strong> ${news.description}</p>` : ''}
                     </div>
+                    ${renderUrlLinks(news.urls)}
                     <div class="col-md-12">
                        <small class="text-muted">更新時間：${dateDisplay}</small>
                     </div>
@@ -246,7 +247,7 @@
             
             // 嘗試從 Firebase Storage 獲取圖片
             if (news.id) {
-                const imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.appspot.com/o/news%2F${news.id}.webp?alt=media`;
+                const imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.firebasestorage.app/o/news%2F${news.id}.webp?alt=media`;
                 const img = new Image();
                 const imageContainer = document.getElementById('news-image-container');
                 
@@ -270,6 +271,26 @@
             
             // 顯示模態框
             new bootstrap.Modal(document.getElementById('newsDetailModal')).show();
+        }
+
+        // 處理URLs數組，將其轉換為HTML連結
+        function renderUrlLinks(urls) {
+            if (!urls || !Array.isArray(urls) || urls.length === 0) {
+                return '';
+            }
+            
+            let linksHtml = '<div class="col-md-12 mb-3"><div class="d-flex flex-wrap gap-2">';
+            
+            urls.forEach(urlItem => {
+                const parts = urlItem.split('|||');
+                if (parts.length === 2) {
+                    const [text, link] = parts;
+                    linksHtml += `<a href="${link}" class="btn btn-sm btn-outline-primary col-2" target="_blank">${text}</a>`;
+                }
+            });
+            
+            linksHtml += '</div></div>';
+            return linksHtml;
         }
     </script>
 </body>

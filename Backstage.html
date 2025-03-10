@@ -29,6 +29,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-storage-compat.js"></script>
     <!-- 引入資料管理模組 -->
     <script src="js/firebase-data.js"></script>
 </head>
@@ -711,7 +712,7 @@
 
             // 課程配置
             course: {
-                collectionName: 'courses',
+                collectionName: 'course',
                 cacheName: 'course',
                 tableId: 'coursesTableBody',
                 searchInputId: 'courseSearchInput',
@@ -720,7 +721,7 @@
                 formId: 'addCourseForm',
                 modalLabelId: 'addCourseModalLabel',
                 defaultImage: 'img/course-default.jpg',
-                deleteLogName: 'courses',
+                deleteLogName: 'course',
                 addBtnId: 'addCourseBtn',
 
                 formFields: {
@@ -1592,7 +1593,16 @@
                         .then(() => {
                             const modal = bootstrap.Modal.getInstance(document.getElementById('addNewsModal'));
                             modal.hide();
-                            form.reset();
+                            
+                            // 完整清除表單
+                            TableManager.resetForm('news');
+                            
+                            // 清除圖片預覽
+                            document.getElementById('newsImagePreview').src = '#';
+                            document.getElementById('newsImagePreview').style.display = 'none';
+                            
+                            // 清空URL容器
+                            TableManager.clearUrlContainer('news');
 
                             // 同步數據後重新加載
                             AdminDataManager.syncTable('news').then(() => {
@@ -1656,7 +1666,16 @@
                         .then(() => {
                             const modal = bootstrap.Modal.getInstance(document.getElementById('addCourseModal'));
                             modal.hide();
-                            form.reset();
+                            
+                            // 完整清除表單
+                            TableManager.resetForm('course');
+                            
+                            // 清除圖片預覽
+                            document.getElementById('courseImagePreview').src = '#';
+                            document.getElementById('courseImagePreview').style.display = 'none';
+                            
+                            // 清空URL容器
+                            TableManager.clearUrlContainer('course');
 
                             // 同步數據後重新加載
                             AdminDataManager.syncTable('course').then(() => {
@@ -1720,7 +1739,19 @@
                         .then(() => {
                             const modal = bootstrap.Modal.getInstance(document.getElementById('addMemberModal'));
                             modal.hide();
-                            form.reset();
+                            
+                            // 完整清除表單
+                            TableManager.resetForm('member');
+                            
+                            // 清除圖片預覽
+                            document.getElementById('memberImagePreview').src = '#';
+                            document.getElementById('memberImagePreview').style.display = 'none';
+                            
+                            // 清空URL容器
+                            TableManager.clearUrlContainer('member');
+                            
+                            // 重置標籤選擇
+                            initMemberTags([]);
 
                             // 同步數據後重新加載
                             AdminDataManager.syncTable('member').then(() => {

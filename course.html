@@ -369,10 +369,33 @@
                     </div>
                     <div class="col-md-12 mt-3">
                         <p>${currentCourse.content || '無課程描述'}</p>
+                        ${renderUrlLinks(currentCourse.urls)}
                     </div>
                 </div>
                 `;
+                // 嘗試從 Firebase Storage 獲取圖片
+                if (course.id) {
+                    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.firebasestorage.app/o/course%2F${course.id}.webp?alt=media`;
+                    const img = new Image();
+                    const imageContainer = document.getElementById('course-image-container');
 
+                    img.onload = function () {
+                        // 圖片載入成功時顯示
+                        img.className = 'img-fluid';
+                        img.alt = course.title || '課程圖片';
+                        imageContainer.innerHTML = '';
+                        imageContainer.appendChild(img);
+                        imageContainer.style.display = 'block';
+                    };
+
+                    img.onerror = function () {
+                        // 圖片載入失敗時隱藏容器
+                        console.log(`無法載入新聞 ${course.id} 的圖片`);
+                        imageContainer.style.display = 'none';
+                    };
+
+                    img.src = imageUrl;
+                }
                 const modal = new bootstrap.Modal(document.getElementById('courseDetailModal'));
                 modal.show();
             } catch (error) {
@@ -451,6 +474,27 @@
                     console.error('報名提交時出錯:', error);
                     alert('報名提交時發生錯誤，請稍後再試或聯絡管理員。');
                 });
+        }
+
+        // 處理URLs數組，將其轉換為HTML連結
+        function renderUrlLinks(urls) {
+            if (!urls || !Array.isArray(urls) || urls.length === 0) {
+                return '';
+            }
+
+            let linksHtml = '<div class="col-md-12 mb-3"><div class="d-flex flex-wrap gap-2">';
+
+            urls.forEach(urlItem => {
+                const parts = urlItem.split('|||');
+                if (parts.length === 2) {
+                    const [text, link] = parts;
+                    linksHtml += `<a href="${link}" class="btn btn-sm btn-outline-primary col-2" target="_blank">${text}</a>`;
+
+                }
+            });
+
+            linksHtml += '</div></div>';
+            return linksHtml;
         }
     </script>
 

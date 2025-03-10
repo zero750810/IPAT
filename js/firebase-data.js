@@ -275,7 +275,8 @@ class DataManager {
             // 4. 去重合併（Firebase 數據優先）
             const existingIds = new Set(firestoreMembers.map(item => item.id));
             const filteredStaticMembers = staticMemberData.filter(item => !existingIds.has(item.id));
-
+            console.log(filteredStaticMembers);
+            console.log(firestoreMembers);
             // 5. 合併數據並返回
             const combinedMembers = [...firestoreMembers, ...filteredStaticMembers];
             console.log(`成員頁面：合併了 ${firestoreMembers.length} 條 Firestore 數據和 ${filteredStaticMembers.length} 條靜態數據`);

@@ -175,12 +175,14 @@
                             <div class="col-md-1">
                                 </div>
                             <div class="col-md-3">
-                               <img src="img/member/${member.id}.jpg" class="img-fluid rounded-start" alt="${member.name || '無姓名'}">
+                               <!-- <img src="img/member/${member.id}.jpg" class="img-fluid rounded-start" alt="${member.name || '無姓名'}"> -->
+                               <img src="https://firebasestorage.googleapis.com/v0/b/ipat-database.firebasestorage.app/o/member%2F${member.id}.webp?alt=media" class="img-fluid rounded-start" alt="${member.name || '無姓名'}">
                             </div>
                             <div class="col-md-7">
                                 <div class="card-body">
                                     <h5 class="card-title">${member.name || '無姓名'} - ${title}</h5>
                                     <p class="card-text">${member.introduction || '無簡介'}</p>
+                                    ${renderUrlLinks(member.urls)}
                                 </div>
                             </div>
                             <div class="col-md-1">
@@ -188,8 +190,30 @@
                         </div>
                     </div>
                 `;
+                
                 membersContainer.appendChild(memberDiv);
             });
+        }
+    
+    // 處理URLs數組，將其轉換為HTML連結
+    function renderUrlLinks(urls) {
+            if (!urls || !Array.isArray(urls) || urls.length === 0) {
+                return '';
+            }
+            
+            let linksHtml = '<div class="col-md-12 mb-3"><div class="d-flex flex-wrap gap-2">';
+            
+            urls.forEach(urlItem => {
+                const parts = urlItem.split('|||');
+                if (parts.length === 2) {
+                    const [text, link] = parts;
+                    linksHtml += `<a href="${link}" class="btn btn-sm btn-outline-primary col-2" target="_blank">${text}</a>`;
+
+                }
+            });
+            
+            linksHtml += '</div></div>';
+            return linksHtml;
         }
     </script>
 </body>
