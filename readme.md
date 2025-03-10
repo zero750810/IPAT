@@ -2,12 +2,13 @@
 
 本專案是國際遊戲協會台灣分會 (IPAT) 的官方網站，使用 HTML、Bootstrap 5 和 Firebase 構建。
 
+設計開發 Zero Lin
 ## 專案結構
 
 - **首頁 (index.html)**: 網站主頁，展示協會基本資訊、最新消息和課程概覽
 - **關於我們 (about.html)**: 介紹協會宗旨、歷史和組織架構
 - **成員介紹 (member.html)**: 展示協會的成員資訊（動態從 Firebase 獲取）
-- **最新消息 (news.html)**: 顯示協會的最新動態和公告（動態從 Firebase 獲取）
+- **最新消息 (news.html)**: 顯示協會的最新動態和公告，以卡片式布局呈現（動態從 Firebase 獲取）
 - **課程介紹 (course.html)**: 展示協會提供的課程資訊，含報名功能（動態從 Firebase 獲取）
 - **聯絡我們 (contact.html)**: 提供聯絡表單和協會聯絡資訊
 - **後台管理 (Backstage.html)**: 管理員後台，用於管理網站內容
@@ -16,8 +17,9 @@
 ## 技術架構
 
 - **前端技術**: HTML5, CSS3, Bootstrap 5, JavaScript
-- **後端服務**: Firebase (Firestore, Authentication)
+- **後端服務**: Firebase (Firestore, Authentication, Storage)
 - **資料管理**: 使用 Firebase Firestore 儲存和獲取動態資料
+- **檔案儲存**: 使用 Firebase Storage 儲存和獲取圖片
 - **使用者認證**: 使用 Firebase Authentication 進行後台管理登入
 
 ## 資料流程
@@ -163,7 +165,7 @@ flowchart TD
 ## 安裝和使用
 
 1. 克隆此儲存庫
-2. 配置 Firebase 專案（Firestore 和 Authentication）
+2. 配置 Firebase 專案（Firestore、Authentication 和 Storage）
 3. 更新 `firebase-data.js` 中的 Firebase 配置
 4. 將檔案部署到網頁伺服器
 
@@ -172,9 +174,9 @@ flowchart TD
 1. 訪問 `Backstage.html` 進入後台登入頁面
 2. 使用管理員帳號和密碼登入
 3. 登入後可以管理網站的各項內容：
-   - 最新消息管理
-   - 課程管理
-   - 成員管理
+   - 最新消息管理（包含標題、內容、相關連結和圖片上傳）
+   - 課程管理（包含課程詳情、時間設定和相關連結）
+   - 成員管理（包含成員資訊、職位和相關連結）
    - 報名資料查看
 
 ## 授權和版權
@@ -188,103 +190,17 @@ flowchart TD
 - 成員介紹
 - 後台管理系統
 
-## 開發環境設置
-
-### 1. 安裝依賴
-本專案為純靜態網站，不需要安裝依賴套件。
-
-### 2. Firebase 設定
-專案使用 Firebase 服務進行資料存儲和身份驗證。您需要設置 Firebase 配置：
-
-1. 複製 `.env-sample` 文件為 `.env`
-2. 在 `.env` 文件中填入您的 Firebase 專案配置
-
-```
-FIREBASE_API_KEY=your_api_key
-FIREBASE_AUTH_DOMAIN=your_auth_domain
-FIREBASE_DATABASE_URL=your_database_url
-...等等
-```
-
-**重要說明：** `.env` 文件包含敏感資訊，已在 `.gitignore` 中設定為不上傳至版本控制系統。
-
-### 3. 啟動本地開發環境
-可以使用任何靜態檔案伺服器啟動專案，例如：
-
-```bash
-# 使用 Python 啟動簡易伺服器
-python -m http.server 8000
-
-# 或使用 Node.js 的 http-server
-npx http-server
-```
-
-## 部署說明
-
-### Firebase Hosting 部署（推薦）
-使用 Firebase Hosting 部署時，可以安全地處理環境變數：
-
-1. 安裝 Firebase CLI：
-```bash
-npm install -g firebase-tools
-```
-
-2. 登入 Firebase：
-```bash
-firebase login
-```
-
-3. 初始化專案：
-```bash
-firebase init hosting
-```
-
-4. 在部署前替換環境變數：
-建立一個部署腳本 `deploy.sh`：
-
-```bash
-#!/bin/bash
-# 從 .env 檔案讀取環境變數
-source .env
-
-# 替換 firebase-data.js 中的配置
-sed -i '' "s/process.env.FIREBASE_API_KEY/\"$FIREBASE_API_KEY\"/g" js/firebase-data.js
-sed -i '' "s/process.env.FIREBASE_AUTH_DOMAIN/\"$FIREBASE_AUTH_DOMAIN\"/g" js/firebase-data.js
-# ...其他環境變數
-
-# 部署到 Firebase
-firebase deploy
-
-# 還原檔案（以便本地開發）
-git checkout js/firebase-data.js
-```
-
-5. 執行部署腳本：
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
-
-### 其他靜態托管服務部署
-如果使用其他靜態網站托管服務，請確保：
-
-1. 不要直接上傳包含實際 API 金鑰的檔案
-2. 使用部署平台提供的環境變數功能
-3. 部署時使用腳本替換配置變數
-
 ## 資料結構說明
 Firebase Firestore 資料庫結構：
 
-- `news`: 最新消息資料
-- `course`: 課程資料
-- `member`: 成員資料
+- `news`: 最新消息資料（標題、內容、更新時間、URL連結）
+- `course`: 課程資料（課程名稱、內容、開始和結束日期、URL連結）
+- `member`: 成員資料（姓名、職位、介紹、URL連結）
 - `Registration`: 報名資料
 - `delectlog`: 資料刪除日誌
 
 ## 安全性注意事項
-1. **絕不** 將真實的 Firebase 配置提交到版本控制系統
-2. 請妥善設置 Firebase 安全規則，限制未授權訪問
-3. 後台管理頁面需要管理員登入才能訪問
+1. 後台管理頁面需要管理員登入才能訪問
 
 ## 前台頁面資料獲取流程
 
@@ -300,15 +216,7 @@ Firebase Firestore 資料庫結構：
 
 1. 頁面載入時觸發 `DOMContentLoaded` 事件
 2. 調用 `window.dataManager.getNewsForIndex()` 獲取最新 3 則新聞
-   - 讀取 `news.js` 中的靜態數據作為基礎數據
-   - 從 Firebase 的 `news` 集合獲取 `updatetime` 為今天 0 時之後的記錄
-   - 將這兩部分數據合併（Firebase 數據優先），基於 ID 去重
-   - 返回前 3 則合併後的新聞
 3. 調用 `window.dataManager.getCoursesForIndex()` 獲取最新 4 個課程
-   - 讀取 `course.js` 中的靜態數據作為基礎數據
-   - 從 Firebase 的 `courses` 集合獲取 `updatetime` 為今天 0 時之後的記錄
-   - 將這兩部分數據合併（Firebase 數據優先），基於 ID 去重
-   - 返回前 4 個合併後的課程
 4. 獲取到資料後分別調用 `updateNewsSection()` 和 `updateCoursesSection()` 更新頁面內容
 
 ### 成員介紹頁面 (member.html)
@@ -316,32 +224,23 @@ Firebase Firestore 資料庫結構：
 
 1. 頁面載入時觸發 `DOMContentLoaded` 事件
 2. 調用 `window.dataManager.getMembers()` 獲取所有成員資料
-   - 讀取 `member.js` 中的靜態數據作為基礎數據
-   - 從 Firebase 的 `member` 集合獲取 `updatetime` 為今天 0 時之後的記錄
-   - 將這兩部分數據合併（Firebase 數據優先），基於 ID 去重
 3. 獲取到資料後調用 `renderMembers()` 將成員資料渲染到頁面
    - 渲染時會先按職稱對成員進行排序，領導職位優先顯示
 
 ### 最新消息頁面 (news.html)
-最新消息頁面從 Firebase 獲取所有新聞資料，並提供按月份篩選功能。
+最新消息頁面從 Firebase 獲取所有新聞資料，並以卡片式布局呈現。
 
 1. 頁面載入時觸發 `DOMContentLoaded` 事件
-2. 調用 `window.dataManager.getNews()` 獲取所有新聞資料
-   - 讀取 `news.js` 中的靜態數據作為基礎數據
-   - 從 Firebase 的 `news` 集合獲取 `updatetime` 為今天 0 時之後的記錄
-   - 將這兩部分數據合併（Firebase 數據優先），基於 ID 去重
-3. 將獲取的資料保存在 `window.allNewsItems` 中
-4. 預設調用 `filterNews('current')` 顯示本月的新聞
-5. 用戶可以點擊「本月消息」或「過往消息」進行篩選
+2. 調用 `window.dataManager.getNews()` 獲取所有新聞資料並按更新時間排序（最新的在前）
+3. 獲取到資料後調用 `displayNewsCards()` 將新聞資料以卡片格式渲染到頁面
+4. 點擊卡片時調用 `showNewsDetail()` 顯示新聞詳情模態框，包含完整內容和相關連結
+5. 新聞圖片從 Firebase Storage 獲取，使用新聞 ID 作為檔名
 
 ### 課程介紹頁面 (course.html)
 課程介紹頁面從 Firebase 獲取所有課程資料，並提供課程詳情查看和報名功能。
 
 1. 頁面載入時觸發 `DOMContentLoaded` 事件
 2. 調用 `window.dataManager.getCourses()` 獲取所有課程資料
-   - 讀取 `course.js` 中的靜態數據作為基礎數據
-   - 從 Firebase 的 `courses` 集合獲取 `updatetime` 為今天 0 時之後的記錄
-   - 將這兩部分數據合併（Firebase 數據優先），基於 ID 去重
 3. 獲取到資料後調用 `renderCourses()` 將課程資料渲染到頁面
 4. 點擊課程卡片時調用 `showCourseDetail(courseId)` 顯示課程詳情
 5. 點擊「報名課程」按鈕時開啟報名表單
