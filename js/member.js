@@ -8,7 +8,7 @@ const member = [
       "一般會員",
       "授課講師"
     ],
-    "updatetime": "2025-03-08T06:27:52.289Z"
+    "updatetime": "2025-03-09T06:27:52.289Z"
   }
 ];
 window.member = member;
