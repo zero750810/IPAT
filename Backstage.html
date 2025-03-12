@@ -32,6 +32,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-storage-compat.js"></script>
     <!-- 引入資料管理模組 -->
     <script src="js/firebase-data.js"></script>
+    <script src="js/table.js"></script>
+    <script src="js/add.js"></script>
 </head>
 
 <body>
@@ -100,6 +102,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showTab('registrations')">報名資料管理</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('photoAlbums')">活動花絮管理</a>
                         </li>
                     </ul>
                 </div>
@@ -220,6 +225,8 @@
                                         <th>授課教師</th>
                                         <th>上課時間</th>
                                         <th>費用</th>
+                                        <th>人數</th>
+                                        <th>狀態</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
@@ -286,10 +293,39 @@
                                         <th>報名人數</th>
                                         <th>總費用</th>
                                         <th>報到</th>
+                                        <th>匯款</th>
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody id="registrationsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 活動花絮管理頁面 -->
+                    <div id="photoAlbums" class="tab-content" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2>活動花絮管理</h2>
+                            <div class="d-flex align-items-center">
+                                <div class="input-group me-3">
+                                    <input type="text" class="form-control" id="photoAlbumSearchInput" placeholder="搜尋標題"
+                                        oninput="searchPhotoAlbums()">
+                                </div>
+                                <button class="btn btn-primary col-md-3" data-bs-toggle="modal"
+                                    data-bs-target="#addPhotoAlbumModal">新增活動花絮</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>標題</th>
+                                        <th>更新日期</th>
+                                        <th>照片連結</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="photoAlbumsTableBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -378,10 +414,14 @@
                                         <option value="">選擇授課老師</option>
                                     </select>
                                 </div>
-                                <div class="mb-1">
+                                <div class="mb-3">
                                     <label for="courseStartDate" class="form-label">開始時間</label>
                                     <input type="datetime-local" class="form-control" id="courseStartDate" required>
-                                </div>                                
+                                </div>
+                                <div>
+                                    <label for="courseCapacity" class="form-label">上課人數</label>
+                                    <input type="number" class="form-control" id="courseCapacity" required min="1">
+                                </div>
                             </div>
                             <!-- 區塊二：課程費用、上課地點 -->
                             <div class="col-6">
@@ -393,9 +433,18 @@
                                     <label for="courseLocation" class="form-label">上課地點</label>
                                     <input type="text" class="form-control" id="courseLocation" required>
                                 </div>
-                                <div class="mb-1">
+                                <div class="mb-3">
                                     <label for="courseEndDate" class="form-label">結束時間</label>
                                     <input type="datetime-local" class="form-control" id="courseEndDate" required>
+                                </div>
+                                <!-- 圖片上傳區塊 (用於各個模態框) -->
+                                <div>
+                                    <label class="form-label">上傳圖片</label>
+                                    <input type="file" class="form-control" id="courseImageUpload" accept="image/*">
+                                    <div class="mt-2">
+                                        <img id="courseImagePreview" src="#" alt="預覽"
+                                            style="max-width: 100%; max-height: 200px; display: none;">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -405,15 +454,8 @@
                             <label for="courseDescription" class="form-label">課程簡介</label>
                             <textarea class="form-control" id="courseDescription" rows="3" required></textarea>
                         </div>
-                        <!-- 圖片上傳區塊 (用於各個模態框) -->
-                        <div class="mb-3">
-                            <label class="form-label">上傳圖片</label>
-                            <input type="file" class="form-control" id="courseImageUpload" accept="image/*">
-                            <div class="mt-2">
-                                <img id="courseImagePreview" src="#" alt="預覽"
-                                    style="max-width: 100%; max-height: 200px; display: none;">
-                            </div>
-                        </div>
+
+
                         <!-- URL動態輸入區域 -->
                         <div class="mb-3">
                             <label class="form-label">相關連結</label>
@@ -524,6 +566,39 @@
         </div>
     </div>
 
+    <!-- 新增活動花絮 Modal -->
+    <div class="modal fade" id="addPhotoAlbumModal" tabindex="-1" aria-labelledby="addPhotoAlbumModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPhotoAlbumModalLabel">新增</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPhotoAlbumForm">
+                        <div class="mb-3">
+                            <label for="photoAlbumId" class="form-label">活動編號</label>
+                            <input type="text" class="form-control" id="photoAlbumId" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="photoAlbumTitle" class="form-label">活動標題</label>
+                            <input type="text" class="form-control" id="photoAlbumTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="photoAlbumUrl" class="form-label">照片連結</label>
+                            <input type="url" class="form-control" id="photoAlbumUrl" required>
+                            <small class="form-text text-muted">輸入相簿或雲端照片連結</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="addPhotoAlbum()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 使用從 firebase-data.js 引入的 Firebase 物件
         // 不需要重新宣告 auth 和 db
@@ -534,7 +609,7 @@
             CACHE_TIME_KEY: 'admin_update_times',
 
             // 定義需要管理的表格
-            TABLES: ['Registration', 'course', 'member', 'news', 'delectlog'],
+            TABLES: ['Registration', 'course', 'member', 'news', 'delectlog', 'photo_album'],
 
             // 獲取更新時間
             getUpdateTimes() {
@@ -647,806 +722,6 @@
             }
         };
 
-        // 表格配置信息
-        const TableConfig = {
-            // 新聞配置
-            news: {
-                collectionName: 'news',    // Firestore 集合名稱
-                cacheName: 'news',         // 快取名稱
-                tableId: 'newsTableBody',  // HTML 表格 ID
-                searchInputId: 'newsSearchInput',  // 搜尋輸入框 ID
-                modalId: 'addNewsModal',   // Modal ID
-                formId: 'addNewsForm',     // 表單 ID
-                modalLabelId: 'addNewsModalLabel', // Modal 標題 ID
-                defaultImage: 'img/news-default.jpg',  // 默認圖片
-                deleteLogName: 'news',     // 刪除記錄名稱
-                addBtnId: 'addNewsBtn',    // 添加按鈕 ID
-
-                // 表單字段映射
-                formFields: {
-                    title: 'newsTitle',
-                    content: 'newsDescription'
-                },
-
-                // 表格行生成函數
-                createTableRow: (item) => {
-                    const updateDate = item.updatetime ?
-                        new Date(item.updatetime.seconds * 1000).toLocaleDateString() : '無日期';
-                    return `
-                        <td>${item.title}</td>
-                        <td>${updateDate}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="TableManager.edit('news', '${item.id}')">編輯</button>
-                            <button class="btn btn-sm btn-danger" onclick="TableManager.delete('news', '${item.id}')">刪除</button>
-                        </td>
-                    `;
-                },
-
-                // 排序函數
-                sortFunc: (a, b) => {
-                    // 使用 Firebase Timestamp 格式正確排序
-                    if (a.updatetime && b.updatetime) {
-                        if (a.updatetime.seconds !== b.updatetime.seconds) {
-                            return b.updatetime.seconds - a.updatetime.seconds;
-                        }
-                        return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
-                    }
-                    return 0;
-                },
-
-                // 搜尋過濾函數
-                filterFunc: (item, searchTerm) => {
-                    return item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase());
-                },
-
-                // 從表單獲取數據的函數
-                getFormData: () => {
-                    return {
-                        title: document.getElementById('newsTitle').value,
-                        content: processTextareaContent(document.getElementById('newsDescription').value),
-                        updatetime: firebase.firestore.FieldValue.serverTimestamp(),
-                        urls: collectUrlData('newsUrlContainer')
-                    };
-                }
-            },
-
-            // 課程配置
-            course: {
-                collectionName: 'course',
-                cacheName: 'course',
-                tableId: 'coursesTableBody',
-                searchInputId: 'courseSearchInput',
-                teacherSearchId: 'teacherSearchSelect',
-                modalId: 'addCourseModal',
-                formId: 'addCourseForm',
-                modalLabelId: 'addCourseModalLabel',
-                defaultImage: 'img/course-default.jpg',
-                deleteLogName: 'course',
-                addBtnId: 'addCourseBtn',
-
-                formFields: {
-                    title: 'courseTitle',
-                    teacher: 'courseTeacher',
-                    startdate: 'courseStartDate',
-                    enddate: 'courseEndDate',
-                    price: 'coursePrice',
-                    location: 'courseLocation',
-                    description: 'courseDescription'
-                },
-
-                createTableRow: (item) => {
-                    // 日期格式化顯示
-                    let dateDisplay = '無時間';
-                    if (item.startdate) {
-                        const startDate = new Date(item.startdate);
-                        const formattedStart = startDate.toLocaleDateString('zh-TW');
-                        if (item.enddate) {
-                            const endDate = new Date(item.enddate);
-                            const formattedEnd = endDate.toLocaleDateString('zh-TW');
-                            dateDisplay = `${formattedStart} 至 ${formattedEnd}`;
-                        } else {
-                            dateDisplay = formattedStart;
-                        }
-                    }
-
-                    return `
-                        <td>${item.title || '無標題'}</td>
-                        <td>${item.teacher || '無教師'}</td>
-                        <td>${dateDisplay}</td>
-                        <td>${item.price || '無價格'}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="TableManager.edit('course', '${item.id}')">編輯</button>
-                            <button class="btn btn-sm btn-danger" onclick="TableManager.delete('course', '${item.id}')">刪除</button>
-                        </td>
-                    `;
-                },
-
-                sortFunc: (a, b) => {
-                    if (a.updatetime && b.updatetime) {
-                        if (a.updatetime.seconds !== b.updatetime.seconds) {
-                            return b.updatetime.seconds - a.updatetime.seconds;
-                        }
-                        return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
-                    }
-                    return 0;
-                },
-
-                filterFunc: (item, searchTerm, teacherTerm) => {
-                    const titleMatch = item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase());
-                    const teacherMatch = !teacherTerm || (item.teacher && item.teacher === teacherTerm);
-                    return titleMatch && teacherMatch;
-                },
-
-                getFormData: () => {
-                    return {
-                        title: document.getElementById('courseTitle').value,
-                        teacher: document.getElementById('courseTeacher').value,
-                        startdate: document.getElementById('courseStartDate').value,
-                        enddate: document.getElementById('courseEndDate').value,
-                        price: parseInt(document.getElementById('coursePrice').value),
-                        location: document.getElementById('courseLocation').value,
-                        description: processTextareaContent(document.getElementById('courseDescription').value),
-                        updatetime: firebase.firestore.FieldValue.serverTimestamp(),
-                        urls: collectUrlData('courseUrlContainer')
-                    };
-                }
-            },
-
-            // 成員配置
-            member: {
-                collectionName: 'member',
-                cacheName: 'member',
-                tableId: 'membersTableBody',
-                searchInputId: 'memberSearchInput',
-                titleSearchId: 'titleSearchSelect',
-                modalId: 'addMemberModal',
-                formId: 'addMemberForm',
-                modalLabelId: 'addMemberModalLabel',
-                defaultImage: 'img/member-default.jpg',
-                deleteLogName: 'member',
-                addBtnId: 'addMemberBtn',
-
-                formFields: {
-                    name: 'memberName',
-                    tag: 'memberTitle',
-                    mail: 'memberEmail',
-                    phone: 'memberPhone',
-                    introduction: 'memberDescription'
-                },
-
-                createTableRow: (item) => {
-                    // 將標籤數組轉換為顯示用字串
-                    const tagDisplay = Array.isArray(item.tag) ? item.tag.join(', ') : (item.tag || '-');
-
-                    return `
-                        <td>${item.name}</td>
-                        <td>${tagDisplay}</td>
-                        <td>${item.mail || '-'}</td>
-                        <td>${item.phone || '-'}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="TableManager.edit('member', '${item.id}')">編輯</button>
-                            <button class="btn btn-sm btn-danger" onclick="TableManager.delete('member', '${item.id}')">刪除</button>
-                        </td>
-                    `;
-                },
-
-                sortFunc: (a, b) => {
-                    return a.name.localeCompare(b.name);
-                },
-
-                filterFunc: (item, searchTerm, titleTerm) => {
-                    const nameMatch = item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-                    // 修改標籤篩選邏輯，支持數組形式的標籤
-                    const titleMatch = !titleTerm || (Array.isArray(item.tag) && item.tag.includes(titleTerm));
-
-                    return nameMatch && titleMatch;
-                },
-
-                getFormData: () => {
-                    // 獲取選中的標籤
-                    const selectedTags = [];
-                    document.querySelectorAll('#memberTagsContainer input[type="checkbox"]:checked').forEach(checkbox => {
-                        selectedTags.push(checkbox.value);
-                    });
-
-                    console.log('提交表單 - 選中的標籤:', selectedTags);
-
-                    return {
-                        name: document.getElementById('memberName').value,
-                        tag: selectedTags, // 保存為數組
-                        mail: document.getElementById('memberEmail').value,
-                        phone: document.getElementById('memberPhone').value,
-                        introduction: processTextareaContent(document.getElementById('memberDescription').value),
-                        updatetime: firebase.firestore.FieldValue.serverTimestamp(),
-                        urls: collectUrlData('memberUrlContainer')
-                    };
-                }
-            },
-
-            // 報名資料配置
-            registration: {
-                collectionName: 'enrollments',
-                cacheName: 'Registration',
-                tableId: 'registrationsTableBody',
-                courseSelectId: 'registrationCourseSelect',
-                deleteLogName: 'enrollments',
-
-
-                createTableRow: (item) => {
-                    const enrollDate = item.enrollDate ?
-                        new Date(item.enrollDate).toLocaleString() : '無日期';
-
-                    // 取得報到狀態並設定不同的按鈕樣式
-                    const isCheckedIn = item.check_in === true;
-                    const checkInBtnClass = isCheckedIn ? 'btn-success' : 'btn-outline-success';
-                    const checkInBtnText = isCheckedIn ? '已報到' : '未報到';
-
-                    return `
-                        <td>${item.courseName || '未知課程'}</td>
-                        <td>${item.name || '未知'}</td>
-                        <td>${item.phone || '無'}</td>
-                        <td>${enrollDate}</td>
-                        <td>${item.participants || 1}</td>
-                        <td>${item.totalFee || '未知'}</td>
-                        <td>
-                            <button class="btn btn-sm ${checkInBtnClass}" onclick="toggleCheckIn('${item.id}', ${!isCheckedIn})">
-                                ${checkInBtnText}
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-danger" onclick="TableManager.delete('registration', '${item.id}')">刪除</button>
-                        </td>
-                    `;
-                },
-
-                sortFunc: (a, b) => {
-                    if (a.updatetime && b.updatetime) {
-                        if (a.updatetime.seconds !== b.updatetime.seconds) {
-                            return b.updatetime.seconds - a.updatetime.seconds;
-                        }
-                        return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
-                    } else if (a.enrollDate && b.enrollDate) {
-                        return new Date(b.enrollDate) - new Date(a.enrollDate);
-                    }
-                    return 0;
-                },
-
-                filterFunc: (item, courseTerm) => {
-                    return !courseTerm || (item.courseName && item.courseName === courseTerm);
-                }
-            }
-        };
-
-        // 表格管理器 - 統一處理所有表格的增刪改查操作
-        const TableManager = {
-            // 加載表格數據
-            load: function (tableType) {
-                const config = TableConfig[tableType];
-                if (!config) return;
-
-                const data = AdminDataManager.getTableCache(config.cacheName);
-                const tableBody = document.getElementById(config.tableId);
-                tableBody.innerHTML = '';
-
-                // 特殊處理 - 報名表不自動加載數據
-                if (tableType === 'registration') {
-                    this.updateDropdowns(tableType);
-                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center">請使用上方的搜尋功能查詢報名資料</td></tr>';
-                    return;
-                }
-
-                // 確保有資料且為陣列
-                if (!data || !Array.isArray(data) || data.length === 0) {
-                    console.log(`沒有${tableType}資料或資料格式不正確`);
-                    return;
-                }
-
-                // 更新下拉選單
-                this.updateDropdowns(tableType);
-
-                // 按設定排序
-                const sortedData = [...data].sort(config.sortFunc);
-
-                // 生成表格行
-                sortedData.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = config.createTableRow(item);
-                    tableBody.appendChild(row);
-                });
-            },
-
-            // 搜尋表格數據
-            search: function (tableType) {
-                const config = TableConfig[tableType];
-                if (!config) return;
-
-                const data = AdminDataManager.getTableCache(config.cacheName);
-                const tableBody = document.getElementById(config.tableId);
-                tableBody.innerHTML = '';
-
-                // 確保有資料且為陣列
-                if (!data || !Array.isArray(data) || data.length === 0) {
-                    console.log(`沒有${tableType}資料或資料格式不正確`);
-                    return;
-                }
-
-                // 獲取搜尋條件
-                let searchTerm = '';
-                let secondaryTerm = '';
-
-                if (tableType === 'news') {
-                    searchTerm = document.getElementById(config.searchInputId).value;
-                } else if (tableType === 'course') {
-                    searchTerm = document.getElementById(config.searchInputId).value;
-                    secondaryTerm = document.getElementById(config.teacherSearchId).value;
-                } else if (tableType === 'member') {
-                    searchTerm = document.getElementById(config.searchInputId).value;
-                    secondaryTerm = document.getElementById(config.titleSearchId).value;
-                } else if (tableType === 'registration') {
-                    searchTerm = document.getElementById(config.courseSelectId).value;
-                    // 如果未選擇課程
-                    if (!searchTerm) {
-                        tableBody.innerHTML = '<tr><td colspan="7" class="text-center">請選擇課程以查詢報名資料</td></tr>';
-                        return;
-                    }
-                }
-
-                // 按設定排序
-                const sortedData = [...data].sort(config.sortFunc);
-
-                // 過濾搜尋結果
-                const filteredData = sortedData.filter(item => config.filterFunc(item, searchTerm, secondaryTerm));
-
-                if (filteredData.length === 0 && tableType === 'registration') {
-                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center">沒有找到符合條件的報名資料</td></tr>';
-                    return;
-                }
-
-                // 生成表格行
-                filteredData.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = config.createTableRow(item);
-                    tableBody.appendChild(row);
-                });
-            },
-
-            // 更新下拉選單
-            updateDropdowns: function (tableType) {
-                if (tableType === 'course') {
-                    this.updateTeacherDropdown();
-                } else if (tableType === 'member') {
-                    this.updateTitleDropdown();
-                } else if (tableType === 'registration') {
-                    this.updateRegistrationCourseDropdown();
-                }
-            },
-
-            // 更新授課老師下拉選單
-            updateTeacherDropdown: function () {
-                const teacherSelect = document.getElementById('teacherSearchSelect');
-                teacherSelect.innerHTML = '<option value="">選擇授課老師</option>';
-
-                // 從member資料中獲取具有授課講師標籤的成員
-                const membersData = AdminDataManager.getTableCache('member');
-
-                // 收集所有有授課講師標籤的成員
-                const teachers = new Set();
-                membersData.forEach(member => {
-                    if (member.tag && Array.isArray(member.tag) && member.tag.includes('授課講師')) {
-                        teachers.add(member.name);
-                    }
-                });
-
-                // 將授課老師添加到下拉選單
-                teachers.forEach(teacher => {
-                    const option = document.createElement('option');
-                    option.value = teacher;
-                    option.textContent = teacher;
-                    teacherSelect.appendChild(option);
-                });
-            },
-
-            // 更新職稱下拉選單
-            updateTitleDropdown: function () {
-                const titleSelect = document.getElementById('titleSearchSelect');
-                titleSelect.innerHTML = '<option value="">選擇職稱</option>';
-
-                // 使用固定的職稱列表
-                const titles = ['會長', '理事長', '副理事長', '理事', '監事', '一般會員', '授課講師'];
-
-                // 將職稱添加到下拉選單
-                titles.forEach(title => {
-                    const option = document.createElement('option');
-                    option.value = title;
-                    option.textContent = title;
-                    titleSelect.appendChild(option);
-                });
-            },
-
-            // 更新報名課程下拉選單
-            updateRegistrationCourseDropdown: function () {
-                const courseSelect = document.getElementById('registrationCourseSelect');
-                courseSelect.innerHTML = '<option value="">選擇課程</option>';
-
-                // 從課程資料中獲取課程標題
-                const coursesData = AdminDataManager.getTableCache('course');
-
-                // 按時間排序，最新的在前面
-                const sortedCourses = [...coursesData].sort((a, b) => {
-                    if (a.updatetime && b.updatetime) {
-                        if (a.updatetime.seconds !== b.updatetime.seconds) {
-                            return b.updatetime.seconds - a.updatetime.seconds;
-                        }
-                        return b.updatetime.nanoseconds - a.updatetime.nanoseconds;
-                    }
-                    return 0;
-                });
-
-                // 收集所有唯一的課程名稱
-                const courses = new Set();
-                sortedCourses.forEach(course => {
-                    if (course.title) {
-                        courses.add(course.title);
-                    }
-                });
-
-                // 將課程名稱添加到下拉選單
-                courses.forEach(courseTitle => {
-                    const option = document.createElement('option');
-                    option.value = courseTitle;
-                    option.textContent = courseTitle;
-                    courseSelect.appendChild(option);
-                });
-            },
-
-            // 添加新記錄
-            add: function (tableType) {
-                const config = TableConfig[tableType];
-                if (!config) return;
-
-                const form = document.getElementById(config.formId);
-
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
-
-                // 獲取文件上傳元素
-                const fileInput = document.getElementById(`${tableType}ImageUpload`);
-
-                // 處理圖片上傳
-                handleImageUpload(config.collectionName, null, fileInput)
-                    .then(docId => {
-                        // 獲取表單數據
-                        const data = config.getFormData();
-
-                        // 使用返回的docId或生成新的
-                        const finalDocId = docId || firebase.firestore().collection(config.collectionName).doc().id;
-
-                        // 保存到Firestore
-                        window.db.collection(config.collectionName).doc(finalDocId).set(data)
-                            .then(() => {
-                                const modal = bootstrap.Modal.getInstance(document.getElementById(config.modalId));
-                                modal.hide();
-                                form.reset();
-
-                                // 同步數據後重新加載
-                                AdminDataManager.syncTable(config.cacheName).then(() => {
-                                    this.load(tableType);
-                                    loadDashboard();
-                                });
-
-                                alert(`新增${tableType}成功！`);
-                            })
-                            .catch(error => {
-                                alert(`新增失敗: ${error.message}`);
-                            });
-                    })
-                    .catch(error => {
-                        alert(`圖片上傳失敗: ${error.message}`);
-                    });
-            },
-
-            // 編輯記錄
-            edit: function (tableType, id) {
-                const config = TableConfig[tableType];
-                if (!config) return;
-
-                const data = AdminDataManager.getTableCache(config.cacheName);
-                const item = data.find(item => item.id === id);
-
-                if (!item) {
-                    alert(`找不到該${tableType}`);
-                    return;
-                }
-
-                // 清空 URL 容器並填充表單
-                this.clearUrlContainer(tableType);
-
-                // 填充表單基本字段
-                Object.keys(config.formFields).forEach(key => {
-                    const fieldId = config.formFields[key];
-                    const element = document.getElementById(fieldId);
-
-                    // 對於標籤的特殊處理
-                    if (key === 'tag' && tableType === 'member') {
-                        // 初始化標籤選擇器並設置已選標籤
-                        const selectedTags = Array.isArray(item[key]) ? item[key] : [];
-                        initMemberTags(selectedTags);
-                    }
-                    // 對於文本區域的特殊處理
-                    else if (element && element.tagName === 'TEXTAREA') {
-                        // 將<br>轉回換行符以便在textarea中正確顯示
-                        const content = item[key] || '';
-                        element.value = content.replace(/<br>/g, '\n');
-                    }
-                    // 對於下拉選單的特殊處理
-                    else if (element && element.tagName === 'SELECT') {
-                        // 如果是授課老師下拉選單，先更新選項
-                        if (fieldId === 'courseTeacher') {
-                            this.updateTeacherSelect();
-                        }
-
-                        // 嘗試選擇匹配的選項
-                        const value = item[key] || '';
-                        const options = Array.from(element.options);
-                        const found = options.find(option => option.value === value);
-
-                        if (found) {
-                            element.value = value;
-                        } else if (value && fieldId === 'courseTeacher') {
-                            // 如果在下拉選單中找不到此老師，動態添加
-                            const option = document.createElement('option');
-                            option.value = value;
-                            option.textContent = value;
-                            element.appendChild(option);
-                            element.value = value;
-                        }
-                    } else if (element) {
-                        // 一般輸入欄位
-                        element.value = item[key] || '';
-                    }
-                });
-
-                // 填充URL資料（如果有）
-                if (item.urls && Array.isArray(item.urls) && item.urls.length > 0) {
-                    const containerId = `${tableType}UrlContainer`;
-                    item.urls.forEach(urlData => {
-                        const parts = urlData.split('|||');
-                        if (parts.length === 2) {
-                            const [text, link] = parts;
-                            this.addUrlFieldWithValues(containerId, text, link);
-                        }
-                    });
-                }
-
-                // 修改Modal標題
-                document.getElementById(config.modalLabelId).textContent = `編輯${tableType}`;
-
-                // 修改提交按鈕
-                const submitButton = document.querySelector(`#${config.modalId} .modal-footer .btn-primary`);
-                submitButton.textContent = '更新';
-                submitButton.onclick = () => this.update(tableType, id);
-
-                // 顯示Modal
-                const modal = new bootstrap.Modal(document.getElementById(config.modalId));
-                modal.show();
-            },
-
-            // 清空URL容器
-            clearUrlContainer: function (tableType) {
-                const containerId = `${tableType}UrlContainer`;
-                const container = document.getElementById(containerId);
-                if (container) {
-                    // 保留第一個URL項目，清空其中的值
-                    const firstItem = container.querySelector('.url-item');
-                    if (firstItem) {
-                        const textInput = firstItem.querySelector('.url-text');
-                        const linkInput = firstItem.querySelector('.url-link');
-                        if (textInput) textInput.value = '';
-                        if (linkInput) linkInput.value = '';
-
-                        // 刪除其他所有項目
-                        Array.from(container.querySelectorAll('.url-item:not(:first-child)')).forEach(item => {
-                            container.removeChild(item);
-                        });
-                    }
-                }
-            },
-
-            // 添加帶有預設值的URL字段
-            addUrlFieldWithValues: function (containerId, text, link) {
-                const urlContainer = document.getElementById(containerId);
-
-                // 如果第一個項目是空的，填充它而不是添加新項目
-                const firstItem = urlContainer.querySelector('.url-item');
-                if (firstItem) {
-                    const textInput = firstItem.querySelector('.url-text');
-                    const linkInput = firstItem.querySelector('.url-link');
-
-                    if (textInput && linkInput && textInput.value === '' && linkInput.value === '') {
-                        textInput.value = text;
-                        linkInput.value = link;
-                        return;
-                    }
-                }
-
-                // 否則添加新項目
-                const newUrlItem = document.createElement('div');
-                newUrlItem.className = 'url-item row mb-2';
-                newUrlItem.innerHTML = `
-                    <div class="col-4">
-                        <input type="text" class="form-control url-text" placeholder="顯示文字" value="${text}">
-                    </div>
-                    <div class="col-6">
-                        <input type="url" class="form-control url-link" placeholder="連結地址" value="${link}">
-                    </div>
-                    <div class="col-1">
-                        <button type="button" class="btn btn-danger btn-sm remove-url">×</button>
-                    </div>
-                `;
-
-                urlContainer.appendChild(newUrlItem);
-
-                // 綁定刪除按鈕事件
-                newUrlItem.querySelector('.remove-url').addEventListener('click', function () {
-                    urlContainer.removeChild(newUrlItem);
-                });
-            },
-
-            // 更新記錄
-            update: function (tableType, id) {
-                const config = TableConfig[tableType];
-                if (!config) return;
-
-                const form = document.getElementById(config.formId);
-
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
-
-                // 獲取文件上傳元素
-                const fileInput = document.getElementById(`${tableType}ImageUpload`);
-
-                // 檢查是否有新上傳的圖片
-                if (fileInput.files && fileInput.files[0]) {
-                    // 處理圖片上傳
-                    handleImageUpload(config.collectionName, id, fileInput)
-                        .then(() => {
-                            // 獲取表單數據
-                            const data = config.getFormData();
-
-                            // 保存到Firestore
-                            this.saveUpdate(tableType, id, data);
-                        })
-                        .catch(error => {
-                            alert(`圖片上傳失敗: ${error.message}`);
-                        });
-                } else {
-                    // 沒有新圖片，直接獲取表單數據
-                    const data = config.getFormData();
-
-                    // 保存到Firestore
-                    this.saveUpdate(tableType, id, data);
-                }
-            },
-
-            // 保存更新
-            saveUpdate: function (tableType, id, data) {
-                const config = TableConfig[tableType];
-
-                window.db.collection(config.collectionName).doc(id).update(data)
-                    .then(() => {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById(config.modalId));
-                        modal.hide();
-
-                        // 徹底清空表單
-                        this.resetForm(tableType);
-
-                        // 還原Modal標題和按鈕
-                        document.getElementById(config.modalLabelId).textContent = `新增${tableType}`;
-                        const submitButton = document.querySelector(`#${config.modalId} .modal-footer .btn-primary`);
-                        submitButton.textContent = '儲存';
-                        submitButton.onclick = () => this.add(tableType);
-
-                        // 同步數據後重新加載
-                        AdminDataManager.syncTable(config.cacheName).then(() => {
-                            this.load(tableType);
-                            loadDashboard();
-                        });
-
-                        alert(`更新${tableType}成功！`);
-                    })
-                    .catch(error => {
-                        alert(`更新失敗: ${error.message}`);
-                    });
-            },
-
-            // 新增方法：重置表單
-            resetForm: function (tableType) {
-                const config = TableConfig[tableType];
-                if (!config) return;
-
-                // 重置表單基本欄位
-                const form = document.getElementById(config.formId);
-                form.reset();
-
-                // 處理特殊欄位
-                if (tableType === 'member') {
-                    // 清空標籤選擇
-                    initMemberTags([]);
-                }
-
-                // 還原Modal標題和按鈕
-                document.getElementById(config.modalLabelId).textContent = `新增${tableType}`;
-                const submitButton = document.querySelector(`#${config.modalId} .modal-footer .btn-primary`);
-                submitButton.textContent = '儲存';
-                submitButton.onclick = () => this.add(tableType);
-
-                console.log(`已重置${tableType}表單`);
-            },
-
-            // 刪除記錄
-            delete: function (tableType, id) {
-                const config = TableConfig[tableType];
-                if (!config) return;
-
-                if (confirm(`確定要刪除這個${tableType}嗎？`)) {
-                    // 首先添加一條刪除記錄
-                    window.db.collection('delectlog').add({
-                        name: config.deleteLogName,
-                        id: id,
-                        updatetime: firebase.firestore.FieldValue.serverTimestamp()
-                    })
-                        .then(() => {
-                            // 然後刪除實際記錄
-                            return window.db.collection(config.collectionName).doc(id).delete();
-                        })
-                        .then(() => {
-                            // 同步刪除日誌和表格數據
-                            return Promise.all([
-                                AdminDataManager.syncTable('delectlog'),
-                                AdminDataManager.syncTable(config.cacheName)
-                            ]);
-                        })
-                        .then(() => {
-                            this.load(tableType);
-                            loadDashboard();
-                            alert('刪除成功！');
-                        })
-                        .catch(error => {
-                            alert(`刪除失敗: ${error.message}`);
-                        });
-                }
-            },
-
-            // 更新授課老師下拉選單 (新增一個方法用於Modal)
-            updateTeacherSelect: function () {
-                const teacherSelect = document.getElementById('courseTeacher');
-                teacherSelect.innerHTML = '<option value="">選擇授課老師</option>';
-
-                // 從member資料中獲取具有授課講師標籤的成員
-                const membersData = AdminDataManager.getTableCache('member');
-
-                // 收集所有有授課講師標籤的成員
-                const teachers = new Set();
-                membersData.forEach(member => {
-                    if (member.tag && Array.isArray(member.tag) && member.tag.includes('授課講師')) {
-                        teachers.add(member.name);
-                    }
-                });
-
-                // 將授課老師添加到下拉選單
-                teachers.forEach(teacher => {
-                    const option = document.createElement('option');
-                    option.value = teacher;
-                    option.textContent = teacher;
-                    teacherSelect.appendChild(option);
-                });
-            }
-        };
 
         // 監聽認證狀態變化
         window.auth.onAuthStateChanged(async function (user) {
@@ -1465,6 +740,7 @@
                 TableManager.load('course');
                 TableManager.load('member');
                 TableManager.load('registration');
+                TableManager.load('photoAlbum');
             } else {
                 // 用戶未登入
                 document.getElementById('loginSection').style.display = 'flex';
@@ -1561,223 +837,7 @@
         }
 
         // 以下是將表單提交綁定到TableManager
-        function addNews() {
-            const form = document.getElementById('addNewsForm');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            // 處理圖片上傳
-            handleImageUpload('news', null, document.getElementById('newsImageUpload'))
-                .then(docId => {
-                    // 處理內容中的換行
-                    const content = processTextareaContent(document.getElementById('newsDescription').value);
-
-                    // 收集URL資料
-                    const urls = collectUrlData('newsUrlContainer');
-
-                    // 建立資料物件
-                    const newsData = {
-                        title: document.getElementById('newsTitle').value,
-                        content: content,
-                        urls: urls,
-                        updatetime: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-
-                    // 使用返回的docId或生成新的
-                    const finalDocId = docId || firebase.firestore().collection('news').doc().id;
-
-                    // 保存到Firestore
-                    window.db.collection('news').doc(finalDocId).set(newsData)
-                        .then(() => {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('addNewsModal'));
-                            modal.hide();
-                            
-                            // 完整清除表單
-                            TableManager.resetForm('news');
-                            
-                            // 清除圖片預覽
-                            document.getElementById('newsImagePreview').src = '#';
-                            document.getElementById('newsImagePreview').style.display = 'none';
-                            
-                            // 清空URL容器
-                            TableManager.clearUrlContainer('news');
-
-                            // 同步數據後重新加載
-                            AdminDataManager.syncTable('news').then(() => {
-                                TableManager.load('news');
-                                loadDashboard();
-                            });
-
-                            alert('新增消息成功！');
-                        })
-                        .catch(error => {
-                            alert(`新增失敗: ${error.message}`);
-                        });
-                })
-                .catch(error => {
-                    alert(`圖片上傳失敗: ${error.message}`);
-                });
-        }
-
-        function searchNews() {
-            TableManager.search('news');
-        }
-
-        function addCourse() {
-            const form = document.getElementById('addCourseForm');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            // 處理圖片上傳
-            handleImageUpload('course', null, document.getElementById('courseImageUpload'))
-                .then(docId => {
-                    // 處理內容中的換行
-                    const description = processTextareaContent(document.getElementById('courseDescription').value);
-
-                    // 收集URL資料
-                    const urls = collectUrlData('courseUrlContainer');
-
-                    // 取得日期資料
-                    const startDate = document.getElementById('courseStartDate').value;
-                    const endDate = document.getElementById('courseEndDate').value;
-
-                    // 建立資料物件
-                    const courseData = {
-                        title: document.getElementById('courseTitle').value,
-                        teacher: document.getElementById('courseTeacher').value,
-                        price: parseInt(document.getElementById('coursePrice').value),
-                        location: document.getElementById('courseLocation').value,
-                        description: description,
-                        startdate: startDate,
-                        enddate: endDate,
-                        urls: urls,
-                        updatetime: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-
-                    // 使用返回的docId或生成新的
-                    const finalDocId = docId || firebase.firestore().collection('course').doc().id;
-
-                    // 保存到Firestore
-                    window.db.collection('course').doc(finalDocId).set(courseData)
-                        .then(() => {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('addCourseModal'));
-                            modal.hide();
-                            
-                            // 完整清除表單
-                            TableManager.resetForm('course');
-                            
-                            // 清除圖片預覽
-                            document.getElementById('courseImagePreview').src = '#';
-                            document.getElementById('courseImagePreview').style.display = 'none';
-                            
-                            // 清空URL容器
-                            TableManager.clearUrlContainer('course');
-
-                            // 同步數據後重新加載
-                            AdminDataManager.syncTable('course').then(() => {
-                                TableManager.load('course');
-                                loadDashboard();
-                            });
-
-                            alert('新增課程成功！');
-                        })
-                        .catch(error => {
-                            alert(`新增失敗: ${error.message}`);
-                        });
-                })
-                .catch(error => {
-                    alert(`圖片上傳失敗: ${error.message}`);
-                });
-        }
-
-        function searchCourses() {
-            TableManager.search('course');
-        }
-
-        function addMember() {
-            const form = document.getElementById('addMemberForm');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            // 處理圖片上傳
-            handleImageUpload('member', null, document.getElementById('memberImageUpload'))
-                .then(docId => {
-                    // 處理內容中的換行
-                    const introduction = processTextareaContent(document.getElementById('memberDescription').value);
-
-                    // 收集URL資料
-                    const urls = collectUrlData('memberUrlContainer');
-
-                    // 獲取選中的標籤
-                    const selectedTags = [];
-                    document.querySelectorAll('#memberTagsContainer input[type="checkbox"]:checked').forEach(checkbox => {
-                        selectedTags.push(checkbox.value);
-                    });
-
-                    // 建立資料物件
-                    const memberData = {
-                        name: document.getElementById('memberName').value,
-                        tag: selectedTags, // 保存為數組
-                        mail: document.getElementById('memberEmail').value,
-                        phone: document.getElementById('memberPhone').value,
-                        introduction: introduction,
-                        urls: urls,
-                        updatetime: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-
-                    // 使用返回的docId或生成新的
-                    const finalDocId = docId || firebase.firestore().collection('member').doc().id;
-
-                    // 保存到Firestore
-                    window.db.collection('member').doc(finalDocId).set(memberData)
-                        .then(() => {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('addMemberModal'));
-                            modal.hide();
-                            
-                            // 完整清除表單
-                            TableManager.resetForm('member');
-                            
-                            // 清除圖片預覽
-                            document.getElementById('memberImagePreview').src = '#';
-                            document.getElementById('memberImagePreview').style.display = 'none';
-                            
-                            // 清空URL容器
-                            TableManager.clearUrlContainer('member');
-                            
-                            // 重置標籤選擇
-                            initMemberTags([]);
-
-                            // 同步數據後重新加載
-                            AdminDataManager.syncTable('member').then(() => {
-                                TableManager.load('member');
-                                loadDashboard();
-                            });
-
-                            alert('新增成員成功！');
-                        })
-                        .catch(error => {
-                            alert(`新增失敗: ${error.message}`);
-                        });
-                })
-                .catch(error => {
-                    alert(`圖片上傳失敗: ${error.message}`);
-                });
-        }
-
-        function searchMembers() {
-            TableManager.search('member');
-        }
-
-        function searchRegistrations() {
-            TableManager.search('registration');
-        }
-
+ 
         // 當Modal打開時更新授課老師下拉選單
         document.getElementById('addCourseModal').addEventListener('show.bs.modal', function () {
             TableManager.updateTeacherSelect();
@@ -1848,6 +908,29 @@
                 });
         }
 
+        // 添加切換匯款狀態的函數
+        function togglePaidStatus(id, newStatus) {
+            if (!id) return;
+
+            // 更新 Firestore 數據
+            window.db.collection('Registration').doc(id).update({
+                paid: newStatus,
+                updatetime: firebase.firestore.FieldValue.serverTimestamp()
+            })
+                .then(() => {
+                    // 同步數據後重新加載
+                    AdminDataManager.syncTable('Registration').then(() => {
+                        searchRegistrations(); // 重新加載顯示的報名資料
+                    });
+
+                    const statusText = newStatus ? '已匯款' : '未匯款';
+                    console.log(`報名者匯款狀態已更新為${statusText}`);
+                })
+                .catch(error => {
+                    alert(`更新匯款狀態失敗: ${error.message}`);
+                });
+        }
+
         // 為每個模態視窗的關閉按鈕和取消按鈕添加事件監聽器
         document.querySelectorAll('.modal .btn-close, .modal .btn-secondary').forEach(button => {
             button.addEventListener('click', function () {
@@ -1860,6 +943,8 @@
                     tableType = 'course';
                 } else if (modalId === 'addMemberModal') {
                     tableType = 'member';
+                }else if (modalId === 'addPhotoAlbumModal') {
+                    tableType = 'photoAlbum';
                 }
 
                 if (tableType) {
@@ -1887,6 +972,8 @@
                     tableType = 'course';
                 } else if (target === '#addMemberModal') {
                     tableType = 'member';
+                }else if (target === '#addPhotoAlbumModal') {
+                    tableType = 'photoAlbum';
                 }
 
                 if (tableType) {
@@ -1942,8 +1029,8 @@
 
                         // 成員照片限制為250x250
                         if (collectionName === 'member') {
-                            maxWidth = 250;
-                            maxHeight = 250;
+                            maxWidth = 400;
+                            maxHeight = 400;
                         } else if (collectionName === 'news') {
                             maxWidth = 800;
                             maxHeight = 450; // 16:9 比例
@@ -1963,29 +1050,12 @@
                             width = (maxHeight / height) * width;
                             height = maxHeight;
                         }
-
-                        // 成員照片需要方形裁剪
-                        if (collectionName === 'member') {
-                            const size = Math.min(width, height);
-                            width = size;
-                            height = size;
-                        }
-
                         // 創建Canvas並轉換為webp
                         const canvas = document.createElement('canvas');
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
-
-                        // 成員照片居中裁剪
-                        if (collectionName === 'member') {
-                            const sourceX = (img.width - width) / 2;
-                            const sourceY = (img.height - height) / 2;
-                            ctx.drawImage(img, sourceX, sourceY, width, height, 0, 0, width, height);
-                        } else {
-                            ctx.drawImage(img, 0, 0, width, height);
-                        }
-
+                        ctx.drawImage(img, 0, 0, width, height);
                         // 轉為webp Blob
                         canvas.toBlob(resolve, 'image/webp', 0.8);
                     };
@@ -2087,7 +1157,151 @@
                 preview.style.display = 'none';
             }
         }
+
+        // 添加切換課程開課狀態的函數
+        function toggleCourseStatus(id, newStatus) {
+            if (!id) return;
+
+            // 如果是取消開課，需要額外確認
+            if (!newStatus) {
+                if (!confirm('確定要取消開課嗎？會向所有已報名學員發送mail通知')) {
+                    return;
+                }
+            }
+
+            // 更新 Firestore 數據
+            window.db.collection('course').doc(id).update({
+                active: newStatus,
+                updatetime: firebase.firestore.FieldValue.serverTimestamp()
+            })
+                .then(() => {
+                    // 同步數據後重新加載
+                    AdminDataManager.syncTable('course').then(() => {
+                        TableManager.load('course');
+                    });
+
+                    const statusText = newStatus ? '開課中' : '已取消';
+                    console.log(`課程狀態已更新為${statusText}`);
+
+                    // 如果是取消開課，可以在這裡添加發送郵件通知的代碼
+                    if (!newStatus) {
+                        // 獲取課程信息
+                        window.db.collection('course').doc(id).get().then(doc => {
+                            if (doc.exists) {
+                                const courseData = doc.data();
+                                const courseTitle = courseData.title;
+
+                                // 通知系統管理員
+                                console.log(`課程「${courseTitle}」已被取消，應向已報名學員發送通知郵件`);
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    alert(`更新課程狀態失敗: ${error.message}`);
+                });
+        }
+
+        // 活動花絮相關函數
+
+        // 初始添加AdminDataManager中需要管理的表格
+        if (AdminDataManager.TABLES.indexOf('photo_album') === -1) {
+            AdminDataManager.TABLES.push('photo_album');
+        }
+        
+      
+
+        // 保存原始的TableManager.edit函數
+        const originalEdit = TableManager.edit;
+        
+        // 修改TableManager的edit函數來為活動花絮添加特殊處理，並處理模態對話框的焦點問題
+        TableManager.edit = function(tableType, id) {
+            // 如果不是photoAlbum，使用原始的函數
+            if (tableType !== 'photoAlbum') {
+                return originalEdit.call(this, tableType, id);
+            }
+            
+            const config = TableConfig[tableType];
+            
+            if (!config) {
+                console.error(`TableConfig for ${tableType} not found.`);
+                return;
+            }
+            
+            // 從 Firestore 獲取資料
+            window.db.collection(config.collectionName).doc(id).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        data.id = doc.id;
+                        
+                        // 設置要編輯的資料
+                        TableManager.currentEditId = id;
+                        
+                        // 獲取表單和模態窗口
+                        const form = document.getElementById(config.formId);
+                        const modal = document.getElementById(config.modalId);
+                        const modalLabel = document.getElementById(config.modalLabelId);
+                        
+                        if (!form || !modal || !modalLabel) {
+                            console.error('Form, modal or modalLabel element not found');
+                            return;
+                        }
+                        
+                        // 更新表單元素
+                        for (const [fieldName, elementId] of Object.entries(config.formFields)) {
+                            const element = document.getElementById(elementId);
+                            if (element) {
+                                element.value = data[fieldName] || '';
+                            }
+                        }
+                        
+                        // 更新標題
+                        modalLabel.textContent = '編輯活動花絮';
+                        
+                        // 清除現有的按鈕事件監聽器並設置新的
+                        const submitButton = form.querySelector('button[type="submit"]');
+                        if (submitButton) {
+                            submitButton.textContent = '更新';
+                            
+                            // 移除先前的事件監聽器
+                            const newSubmitButton = submitButton.cloneNode(true);
+                            submitButton.parentNode.replaceChild(newSubmitButton, submitButton);
+                            
+                            // 添加新的事件監聽器 - 使用自定義的提交函數
+                            newSubmitButton.onclick = function(e) {
+                                e.preventDefault();
+                                addPhotoAlbum(id);
+                            };
+                        }
+                        
+                        // 顯示模態窗口 - 使用不同的方式打開模態框，避免焦點問題
+                        setTimeout(() => {
+                            // 確保任何其他元素失去焦點
+                            document.activeElement.blur();
+                            
+                            // 顯示模態窗口
+                            const modalInstance = new bootstrap.Modal(modal);
+                            modalInstance.show();
+                            
+                            // 模態窗口打開後將焦點轉移到第一個輸入欄位
+                            modal.addEventListener('shown.bs.modal', function() {
+                                const firstInput = form.querySelector('input, textarea, select');
+                                if (firstInput) {
+                                    firstInput.focus();
+                                }
+                            }, { once: true });
+                        }, 100);
+                    } else {
+                        alert('找不到要編輯的資料');
+                    }
+                })
+                .catch(error => {
+                    console.error('獲取資料失敗:', error);
+                    alert(`獲取資料失敗: ${error.message}`);
+                });
+        };
+
     </script>
 </body>
-
 </html>

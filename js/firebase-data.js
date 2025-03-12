@@ -288,6 +288,69 @@ class DataManager {
             return staticMemberData;
         }
     }
+    // 活動花絮頁面 (photoAlbum.html): 獲取全部活動花絮資料
+    async getPhotoAlbum() {
+        console.log("getPhotoAlbum 開始執行");
+
+        // 調試信息
+        console.log("檢查 window.news 是否存在:", window.photo_album ? "存在" : "不存在");
+        if (window.photo_album) {
+            console.log("window.photo_album 類型:", typeof window.photo_album);
+            console.log("window.photo_album 長度:", window.photo_album.length);
+        }
+
+        // 獲取今天 0 時的時間戳
+        const todayStart = this.getTodayStartTimestamp();
+        console.log(`今天 0 時的時間戳: ${todayStart}, ${new Date(todayStart).toLocaleString()}`);
+
+        // 1. 從 photo_album.js 獲取靜態數據
+        let staticphoto_albumData = [];
+        if (window.photo_album && window.photo_album.length > 0) {
+            staticphoto_albumData = window.photo_album;
+            console.log(`讀取到 ${staticphoto_albumData.length} 條靜態新聞數據`);
+        } else {
+            console.warn("無法從 window.photo_album 獲取靜態數據");
+        }
+
+        try {
+            console.log("從 Firebase 獲取今天 0 時之後的所有新聞");
+            if (!window.db) {
+                console.error("window.db 未定義，無法獲取資料");
+                return staticphoto_albumData; // 返回所有靜態數據
+            }
+
+            // 2. 從 Firestore 獲取今天 0 時之後的新聞
+            const todayTimestamp = new Date(todayStart);
+            const snapshot = await window.db.collection('photo_album')
+                .where('updatetime', '>=', todayTimestamp)
+                .orderBy('updatetime', 'desc')
+                .get();
+
+            console.log(`獲取到 ${snapshot.size} 條今天更新的新聞記錄`);
+
+            // 3. 處理 Firestore 數據
+            let firestorephoto_album = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                updatetime: doc.data().updatetime ?
+                    doc.data().updatetime.toDate().getTime() : Date.now()
+            }));
+
+            // 4. 去重合併（Firebase 數據優先）
+            const existingIds = new Set(firestorephoto_album.map(item => item.id));
+            const filteredStaticphoto_album = staticphoto_albumData.filter(item => !existingIds.has(item.id));
+
+            // 5. 合併數據並返回
+            const combinedphoto_album = [...firestorephoto_album, ...filteredStaticphoto_album];
+            console.log(`新聞頁面：合併了 ${firestorephoto_album.length} 條 Firestore 數據和 ${filteredStaticphoto_album.length} 條靜態數據`);
+
+            return combinedphoto_album;
+        } catch (error) {
+            console.error('獲取新聞資料失敗:', error);
+            // 出錯時返回靜態數據
+            return staticphoto_albumData;
+        }
+    }
 }
 // 為全局提供數據管理實例
 try {
@@ -770,8 +833,9 @@ const CacheManager = {
             setTimeout(async () => {
                 try {
                     // 只載入公開資料
-                    await this.getNews();
-                    await this.getCourses();
+                    //await this.getNews();
+                    //await this.getCourses();
+                    //await this.getPhotoAlbum();
                     console.log('公開資料載入完成');
                 } catch (error) {
                     console.error('載入公開資料失敗：', error);
@@ -799,9 +863,9 @@ const CacheManager = {
             // 設置定期檢查公開資料更新（每30分鐘）
             setInterval(async () => {
                 try {
-                    await this.getNews();
-                    await this.getCourses();
-
+                    //await this.getNews();
+                    //await this.getCourses();
+                    //await this.getPhotoAlbum();
                     // 如果用戶已登入，也更新敏感資料
                     if (window.auth.currentUser) {
                         await this.processDeleteLogs();

@@ -68,11 +68,30 @@
                     <p>載入中...</p>
                 </div>
             </div>
+            <div class="text-center mt-3">
+                <button id="loadMoreNews" class="btn btn-outline-primary" style="display: none;">加載更多</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Photo Albums -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center text-warning mb-4">活動花絮</h2>
+            <div class="row" id="photo-albums-container">
+                <!-- 這裡的內容將由 JavaScript 動態生成 -->
+                <div class="col-12 text-center">
+                    <p>載入中...</p>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <button id="loadMorePhotoAlbums" class="btn btn-outline-primary" style="display: none;">加載更多</button>
+            </div>
         </div>
     </section>
 
     <!-- Courses Overview -->
-    <section class="py-5">
+    <section class="bg-light py-5">
         <div class="container">
             <h2 class="text-center text-warning mb-4">最新課程</h2>
             <div class="row" id="courses-container">
@@ -80,6 +99,9 @@
                 <div class="col-12 text-center">
                     <p>載入中...</p>
                 </div>
+            </div>
+            <div class="text-center mt-3">
+                <button id="loadMoreCourses" class="btn btn-outline-primary" style="display: none;">加載更多</button>
             </div>
         </div>
     </section>
@@ -182,6 +204,7 @@
     <script src="js/firebase-data.js"></script>
     <script src="js/news.js"></script>
     <script src="js/course.js"></script>
+    <script src="js/photo_album.js"></script>
 
     <script>
         // 頁面加載時從 Firebase 獲取最新消息和課程資料
@@ -198,16 +221,48 @@
 
                 // 獲取最新消息
                 const newsData = await window.dataManager.getNews();
-                updateNewsSection(newsData);
+                window.allNewsItems = newsData; // 儲存所有新聞數據
+                updateNewsSection(newsData, 0, 6); // 初始加載6條
 
                 // 獲取課程資料
                 const coursesData = await window.dataManager.getCourses();
                 console.log("coursesData", coursesData);
-                updateCoursesSection(coursesData);
+                window.allCoursesItems = coursesData; // 儲存所有課程數據
+                updateCoursesSection(coursesData, 0, 6); // 初始加載6條
+
+                // 獲取活動花絮
+                const photoAlbumsData = await window.dataManager.getPhotoAlbum();
+                console.log("photoAlbumsData", photoAlbumsData);
+                window.allPhotoAlbumsItems = photoAlbumsData; // 儲存所有活動花絮數據
+                updatePhotoAlbumsSection(photoAlbumsData, 0, 6); // 初始加載6條
+
+                // 綁定「加載更多」按鈕事件
+                setupLoadMoreButtons();
             } catch (error) {
                 console.error('載入資料時出錯:', error);
             }
         });
+
+        // 綁定「加載更多」按鈕事件
+        function setupLoadMoreButtons() {
+            // 新聞加載更多
+            document.getElementById('loadMoreNews').addEventListener('click', function() {
+                const currentCount = document.querySelectorAll('#news-container .card').length;
+                updateNewsSection(window.allNewsItems, currentCount, currentCount + 6);
+            });
+
+            // 活動花絮加載更多
+            document.getElementById('loadMorePhotoAlbums').addEventListener('click', function() {
+                const currentCount = document.querySelectorAll('#photo-albums-container .card').length;
+                updatePhotoAlbumsSection(window.allPhotoAlbumsItems, currentCount, currentCount + 6);
+            });
+
+            // 課程加載更多
+            document.getElementById('loadMoreCourses').addEventListener('click', function() {
+                const currentCount = document.querySelectorAll('#courses-container .card').length;
+                updateCoursesSection(window.allCoursesItems, currentCount, currentCount + 6);
+            });
+        }
 
         // 格式化課程時間
         function formatCourseTime(course) {
@@ -264,41 +319,56 @@
         }
 
         // 更新最新消息區域
-        function updateNewsSection(newsItems) {
+        function updateNewsSection(newsItems, start, end) {
             const newsContainer = document.getElementById('news-container');
+            const loadMoreBtn = document.getElementById('loadMoreNews');
             if (!newsContainer) return;
 
-            newsContainer.innerHTML = ''; // 清空現有內容
+            // 首次加載時清空容器
+            if (start === 0) {
+                newsContainer.innerHTML = '';
+            }
 
             if (!newsItems || newsItems.length === 0) {
                 newsContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有最新消息</p></div>';
+                loadMoreBtn.style.display = 'none';
                 return;
             }
 
-            // 只顯示最新的 6 條消息
-            const latestNews = newsItems.slice(0, 6);
+            // 選擇要顯示的新聞範圍
+            const itemsToShow = newsItems.slice(start, end);
 
-            // 儲存新聞數據供模態框使用
-            window.allNewsItems = newsItems;
+            // 根據是否還有更多數據決定是否顯示「加載更多」按鈕
+            if (end >= newsItems.length) {
+                loadMoreBtn.style.display = 'none';
+            } else {
+                loadMoreBtn.style.display = 'inline-block';
+            }
 
-            latestNews.forEach((news, index) => {
+            // 添加新的新聞卡片
+            itemsToShow.forEach((news, index) => {
+                // 計算實際索引（用於顯示詳情時）
+                const actualIndex = start + index;
+                
                 // 格式化日期顯示
                 let dateDisplay = '無日期';
                 if (news.updatetime) {
-                    const date = typeof news.updatetime === 'number'
-                        ? new Date(news.updatetime)
-                        : new Date(news.updatetime);
-                    dateDisplay = date.toLocaleDateString('zh-TW', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
+                    try {
+                        const date = news.updatetime.toDate ? news.updatetime.toDate() : new Date(news.updatetime);
+                        dateDisplay = date.toLocaleDateString('zh-TW', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    } catch (error) {
+                        console.error('格式化日期時出錯:', error);
+                    }
                 }
 
                 const newsDiv = document.createElement('div');
                 newsDiv.className = 'col-md-4 mb-4';
                 newsDiv.innerHTML = `
-                    <div class="card h-100" style="cursor: pointer;" onclick="showNewsDetail(${index})">
+                    <div class="card h-100" style="cursor: pointer;" onclick="showNewsDetail(${actualIndex})">
                         <div class="card-body">
                             <h5 class="card-title">${news.title || '無標題'}</h5>
                             <p class="card-text">${news.content ? news.content.substring(0, 20) + (news.content.length > 20 ? '...' : '') : '無內容'}</p>
@@ -312,33 +382,109 @@
             });
         }
 
-        // 更新課程區域
-        function updateCoursesSection(coursesItems) {
-            const coursesContainer = document.getElementById('courses-container');
-            if (!coursesContainer) return;
+        // 更新活動花絮區域
+        function updatePhotoAlbumsSection(photoAlbumsItems, start, end) {
+            const photoAlbumsContainer = document.getElementById('photo-albums-container');
+            const loadMoreBtn = document.getElementById('loadMorePhotoAlbums');
+            if (!photoAlbumsContainer) return;
 
-            coursesContainer.innerHTML = ''; // 清空現有內容
+            // 首次加載時清空容器
+            if (start === 0) {
+                photoAlbumsContainer.innerHTML = '';
+            }
 
-            if (!coursesItems || coursesItems.length === 0) {
-                coursesContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有最新課程</p></div>';
+            if (!photoAlbumsItems || photoAlbumsItems.length === 0) {
+                photoAlbumsContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有活動花絮</p></div>';
+                loadMoreBtn.style.display = 'none';
                 return;
             }
 
-            // 只顯示最新的 6 條課程
-            const latestCourses = coursesItems.slice(0, 6);
+            // 選擇要顯示的活動花絮範圍
+            const itemsToShow = photoAlbumsItems.slice(start, end);
 
-            // 儲存課程數據供模態框使用
-            window.allCoursesItems = coursesItems;
-            latestCourses.forEach((course, index) => {
+            // 根據是否還有更多數據決定是否顯示「加載更多」按鈕
+            if (end >= photoAlbumsItems.length) {
+                loadMoreBtn.style.display = 'none';
+            } else {
+                loadMoreBtn.style.display = 'inline-block';
+            }
+
+            // 添加新的活動花絮卡片
+            itemsToShow.forEach((album) => {
+                // 格式化日期顯示
+                let dateDisplay = '無日期';
+                if (album.updatetime) {
+                    try {
+                        const date = album.updatetime.toDate ? album.updatetime.toDate() : new Date(album.updatetime);
+                        dateDisplay = date.toLocaleDateString('zh-TW', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    } catch (error) {
+                        console.error('格式化日期時出錯:', error);
+                    }
+                }
+
+                const albumDiv = document.createElement('div');
+                albumDiv.className = 'col-md-4 mb-4';
+                albumDiv.innerHTML = `
+                    <div class="card h-100" style="cursor: pointer;" onclick="window.open('${album.url}', '_blank')">
+                        <div class="card-body">
+                            <h5 class="card-title">${album.title || '無標題'}</h5>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">更新時間：${dateDisplay}</small>
+                        </div>
+                    </div>
+                `;
+                photoAlbumsContainer.appendChild(albumDiv);
+            });
+        }
+
+        // 更新課程區域
+        function updateCoursesSection(coursesItems, start, end) {
+            const coursesContainer = document.getElementById('courses-container');
+            const loadMoreBtn = document.getElementById('loadMoreCourses');
+            if (!coursesContainer) return;
+
+            // 首次加載時清空容器
+            if (start === 0) {
+                coursesContainer.innerHTML = '';
+            }
+
+            if (!coursesItems || coursesItems.length === 0) {
+                coursesContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有最新課程</p></div>';
+                loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            // 選擇要顯示的課程範圍
+            const itemsToShow = coursesItems.slice(start, end);
+
+            // 根據是否還有更多數據決定是否顯示「加載更多」按鈕
+            if (end >= coursesItems.length) {
+                loadMoreBtn.style.display = 'none';
+            } else {
+                loadMoreBtn.style.display = 'inline-block';
+            }
+
+            // 添加新的課程卡片
+            itemsToShow.forEach((course, index) => {
+                // 計算實際索引（用於顯示詳情時）
+                const actualIndex = start + index;
+                
+                const courseTime = formatCourseTime(course);
+                
                 const courseDiv = document.createElement('div');
                 courseDiv.className = 'col-md-4 mb-4';
                 courseDiv.innerHTML = `
-                    <div class="card h-100" style="cursor: pointer;" onclick="showCourseDetail(${index})">
+                    <div class="card h-100" style="cursor: pointer;" onclick="showCourseDetail(${actualIndex})">
                         <div class="card-body">
                             <h5 class="card-title">${course.title || '無標題'}</h5>
                             <p class="card-text">
                                 <small class="text-muted">授課教師: ${course.teacher || '未指定'}</small><br>
-                                <small class="text-muted">上課時間: ${course.time || '未指定'}</small><br>
+                                <small class="text-muted">上課時間: ${courseTime}</small><br>
                                 <small class="text-muted">課程費用: NT＄${course.price || 0}</small>
                             </p>
                         </div>
@@ -440,7 +586,7 @@
                                 <strong>上課時間：</strong><br>${formatCourseTime(course)}
                             </div>
                             <div class="col-md-4">
-                                <strong>上課地點：</strong><br>${course.add || '無資料'}
+                                <strong>上課地點：</strong><br>${course.location || '無資料'}
                             </div>
                         </div>
                     </div>
