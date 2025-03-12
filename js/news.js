@@ -1,6 +1,5 @@
 
-
-const news = [
+  const news = [
   {
     "id": "tWqTTQ6R3b5hLffpUHXq",
     "title": "新增訊息",
