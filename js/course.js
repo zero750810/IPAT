@@ -13,7 +13,8 @@
     "urls": [
       "pdf|||https://learning.nccu.edu.tw/sites/default/files/announcement/%E9%99%84%E4%BB%B6%E5%9B%9B%E6%95%99%E5%AD%B8%E5%A4%A7%E7%B6%B1%E7%AF%84%E4%BE%8B.pdf"
     ],
-    "active": ""
+    "active": "",
+    "capacity": ""
   },
   {
     "id": "CjQxhrLJLlBwPMzstpmJ",
@@ -26,7 +27,8 @@
     "enddate": "2025-03-10T01:29:00.000Z",
     "updatetime": "2025-03-11T04:59:02.334Z",
     "urls": [],
-    "active": true
+    "active": true,
+    "capacity": ""
   }
 ];
   window.course = course;
