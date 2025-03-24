@@ -202,7 +202,7 @@ class DataManager {
 
             // 2. 從 Firestore 獲取今天 0 時之後的課程
             const todayTimestamp = new Date(todayStart);
-            const snapshot = await window.db.collection('courses')
+            const snapshot = await window.db.collection('course')
                 .where('updatetime', '>=', todayTimestamp)
                 .orderBy('updatetime', 'desc')
                 .get();
