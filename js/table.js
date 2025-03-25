@@ -88,6 +88,7 @@
 
                 createTableRow: (item) => {
                     // 日期格式化顯示
+                    console.log(item);
                     let dateDisplay = '無時間';
                     if (item.startdate) {
                         const startDate = new Date(item.startdate);
@@ -110,7 +111,7 @@
                         <td>${item.title || '無標題'}</td>
                         <td>${item.teacher || '無教師'}</td>
                         <td>${dateDisplay}</td>
-                        <td>${item.price || '無價格'}</td>
+                        <td>${item.price || 0}</td>
                         <td>${item.capacity || '無限制'}</td>
                         <td><span class="badge ${isActive ? 'bg-success' : 'bg-danger'}">${statusText}</span></td>
                         <td>
@@ -575,20 +576,14 @@
 
             // 編輯記錄
             edit: function (tableType, id) {
-                console.log(`嘗試編輯 ${tableType} 文檔，ID: ${id}`);  // 添加日誌追蹤
-
-                // 如果不是photoAlbum，使用原始的函數
-                if (tableType !== 'photoAlbum') {
-                    return originalEdit.call(this, tableType, id);
-                }
+                console.log(`開始編輯 ${tableType} 文檔，ID: ${id}`);
                 
                 const config = TableConfig[tableType];
-                
                 if (!config) {
-                    console.error(`TableConfig for ${tableType} not found.`);
+                    console.error(`找不到 ${tableType} 的配置信息`);
                     return;
                 }
-                
+
                 // 從 Firestore 獲取資料
                 window.db.collection(config.collectionName).doc(id).get()
                     .then(doc => {
@@ -596,9 +591,9 @@
                             const data = doc.data();
                             data.id = doc.id;
                             
-                            console.log(`獲取到文檔資料: ${doc.id}`, data);  // 添加日誌追蹤
+                            console.log(`獲取到文檔資料:`, data);
                             
-                            // 設置要編輯的資料 - 確保存儲當前編輯的文檔 ID
+                            // 設置要編輯的資料
                             TableManager.currentEditId = id;
                             
                             // 獲取表單和模態窗口
@@ -607,7 +602,7 @@
                             const modalLabel = document.getElementById(config.modalLabelId);
                             
                             if (!form || !modal || !modalLabel) {
-                                console.error('Form, modal or modalLabel element not found');
+                                console.error('找不到必要的DOM元素');
                                 return;
                             }
                             
@@ -618,49 +613,64 @@
                                     element.value = data[fieldName] || '';
                                 }
                             }
+
+                            // 特殊處理 - 成員標籤
+                            if (tableType === 'member' && Array.isArray(data.tag)) {
+                                initMemberTags(data.tag);
+                            }
+
+                            // 特殊處理 - URL
+                            if (data.urls && Array.isArray(data.urls)) {
+                                // 清空現有的URL欄位
+                                this.clearUrlContainer(tableType);
+                                
+                                // 添加每個URL
+                                data.urls.forEach(urlItem => {
+                                    const parts = urlItem.split('|||');
+                                    if (parts.length === 2) {
+                                        this.addUrlFieldWithValues(`${tableType}UrlContainer`, parts[0], parts[1]);
+                                    }
+                                });
+                            }
                             
                             // 更新標題
-                            modalLabel.textContent = '編輯活動花絮';
+                            modalLabel.textContent = `編輯${tableType}`;
                             
-                            // 清除現有的按鈕事件監聽器並設置新的
-                            const submitButton = form.querySelector('button[type="submit"]');
+                            // 更新提交按鈕
+                            const submitButton = form.querySelector('button[type="submit"]') || 
+                                              modal.querySelector('.modal-footer .btn-primary');
                             if (submitButton) {
                                 submitButton.textContent = '更新';
                                 
-                                // 移除先前的事件監聽器
+                                // 移除現有的事件監聽器
                                 const newSubmitButton = submitButton.cloneNode(true);
                                 submitButton.parentNode.replaceChild(newSubmitButton, submitButton);
                                 
-                                // 添加新的事件監聽器 - 使用自定義的提交函數
-                                // 封閉 id 變數確保它在回調中被正確使用
-                                const documentId = doc.id;  // 明確地從文檔中獲取 ID
-                                console.log(`設置編輯按鈕的點擊處理程序，將使用 ID: ${documentId}`);  // 添加日誌追蹤
-                                
-                                newSubmitButton.onclick = function(e) {
-                                    e.preventDefault();
-                                    console.log(`編輯按鈕被點擊，正在呼叫 handlePhotoAlbumEditSubmit 函數，ID: ${documentId}`);  // 添加日誌追蹤
-                                    handlePhotoAlbumEditSubmit(documentId);
-                                };
+                                // 添加新的事件監聽器
+                                if (tableType === 'photoAlbum') {
+                                    newSubmitButton.onclick = function(e) {
+                                        e.preventDefault();
+                                        addPhotoAlbum(id);
+                                    };
+                                } else {
+                                    newSubmitButton.onclick = () => this.update(tableType, id);
+                                }
                             }
                             
-                            // 顯示模態窗口 - 使用不同的方式打開模態框，避免焦點問題
-                            setTimeout(() => {
-                                // 確保任何其他元素失去焦點
-                                document.activeElement.blur();
-                                
-                                // 顯示模態窗口
-                                const modalInstance = new bootstrap.Modal(modal);
-                                modalInstance.show();
-                                
-                                // 模態窗口打開後將焦點轉移到第一個輸入欄位
-                                modal.addEventListener('shown.bs.modal', function() {
-                                    const firstInput = form.querySelector('input, textarea, select');
-                                    if (firstInput) {
-                                        firstInput.focus();
-                                    }
-                                }, { once: true });
-                            }, 100);
+                            // 顯示模態窗口
+                            const modalInstance = new bootstrap.Modal(modal);
+                            modalInstance.show();
+                            
+                            // 設置焦點
+                            modal.addEventListener('shown.bs.modal', function() {
+                                const firstInput = form.querySelector('input, textarea, select');
+                                if (firstInput) {
+                                    firstInput.focus();
+                                }
+                            }, { once: true });
+                            
                         } else {
+                            console.error('找不到要編輯的文檔');
                             alert('找不到要編輯的資料');
                         }
                     })

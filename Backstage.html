@@ -824,12 +824,23 @@
             }).slice(0, 5);
 
             sortedCourses.forEach(course => {
+                console.log(course);
                 const li = document.createElement('li');
                 li.className = 'list-group-item d-flex justify-content-between align-items-center';
                 const updateDate = course.updatetime ?
                     new Date(course.updatetime.seconds * 1000).toLocaleDateString() : '無日期';
+                
+                // 處理startdate格式
+                let formattedDate = '無日期';
+                if (course.startdate) {
+                    const date = new Date(course.startdate);
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    formattedDate = `${month}-${day}`;
+                }
+
                 li.innerHTML = `
-                    ${course.title}  - ${course.date || '無日期'} - ${course.teacher || '無教師'}
+                     ${formattedDate} - ${course.title} - ${course.teacher || '無教師'}
                     <small>${updateDate}</small>
                 `;
                 recentRegistrationsList.appendChild(li);
