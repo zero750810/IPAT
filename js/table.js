@@ -194,7 +194,26 @@
                 },
 
                 sortFunc: (a, b) => {
-                    return a.name.localeCompare(b.name);
+                    // 職位排序
+                    const positionOrder = {
+                        '理事長': 1,
+                        '副理事長': 2,
+                        '秘書長': 3,
+                        '顧問': 4,
+                        '常務監事': 5,
+                        '常務理事': 6,
+                        '理事': 7,
+                        '監事': 8,
+                        '會員': 9
+                    };
+
+                    const tagA = Array.isArray(a.tag) ? a.tag[0] : a.tag;
+                    const tagB = Array.isArray(b.tag) ? b.tag[0] : b.tag;
+
+                    const orderA = positionOrder[tagA] || 99;
+                    const orderB = positionOrder[tagB] || 99;
+
+                    return orderA - orderB;
                 },
 
                 filterFunc: (item, searchTerm, titleTerm) => {
@@ -479,7 +498,7 @@
                 titleSelect.innerHTML = '<option value="">選擇職稱</option>';
 
                 // 使用固定的職稱列表
-                const titles = ['會長', '理事長', '副理事長', '理事', '監事', '一般會員', '授課講師'];
+                const titles = ['會長', '理事長', '副理事長', '常務理事', '常務監事', '理事', '監事', '一般會員', '授課講師'];
 
                 // 將職稱添加到下拉選單
                 titles.forEach(title => {
