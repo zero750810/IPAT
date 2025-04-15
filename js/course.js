@@ -9,7 +9,7 @@
     "price": 0,
     "startdate": "2025-04-19T01:00:00.000Z",
     "enddate": "2025-04-19T04:00:00.000Z",
-    "updatetime": "2025-04-03T04:10:43.830Z",
+    "updatetime": "2025-04-15T11:25:14.516Z",
     "urls": [],
     "active": true,
     "capacity": 25
