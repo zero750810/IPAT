@@ -266,8 +266,7 @@
                     const paidBtnClass = isPaid ? 'btn-success' : 'btn-outline-secondary';
                     const paidBtnText = isPaid ? '已匯款' : '未匯款';
 
-                    return `
-                        <td>${item.courseName || '未知課程'}</td>
+                    return `                       
                         <td>${item.name || '未知'}</td>
                         <td>${item.phone || '無'}</td>
                         <td>${item.email || '無'}</td>
