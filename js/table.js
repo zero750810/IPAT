@@ -269,7 +269,7 @@
                     return `                       
                         <td>${item.name || '未知'}</td>
                         <td>${item.phone || '無'}</td>
-                        <td>${item.email || '無'}</td>
+                        <td>${item.mail || '無'}</td>
                         <td>${updateDate}</td>
                         <td>${item.participants || 1}</td>
                         <td>${item.totalFee || '未知'}</td>
