@@ -430,8 +430,15 @@
 
                 const albumDiv = document.createElement('div');
                 albumDiv.className = 'col-md-4 mb-4';
+                
+                // 準備圖片URL
+                let imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.firebasestorage.app/o/photo_album%2F${album.id}.webp?alt=media`;
+                
                 albumDiv.innerHTML = `
                     <div class="card h-100" style="cursor: pointer;" onclick="window.open('${album.url}', '_blank')">
+                        <img src="${imageUrl}" class="card-img-top album-cover" alt="${album.title || '活動照片'}" 
+                             onerror="this.onerror=null; this.style.display='none';" 
+                             style="height: 200px; object-fit: cover;">
                         <div class="card-body">
                             <h5 class="card-title">${album.title || '無標題'}</h5>
                         </div>

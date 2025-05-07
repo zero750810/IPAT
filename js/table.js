@@ -844,6 +844,19 @@
                     initMemberTags([]);
                 }
 
+                // 清除圖片預覽
+                if (['news', 'course', 'member', 'photoAlbum'].includes(tableType)) {
+                    const previewId = `${tableType}ImagePreview`;
+                    const preview = document.getElementById(previewId);
+                    if (preview) {
+                        preview.src = '#';
+                        preview.style.display = 'none';
+                    }
+                }
+
+                // 清除URL容器
+                this.clearUrlContainer(tableType);
+
                 // 還原Modal標題和按鈕
                 document.getElementById(config.modalLabelId).textContent = `新增${tableType}`;
                 const submitButton = document.querySelector(`#${config.modalId} .modal-footer .btn-primary`);

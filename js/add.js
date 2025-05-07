@@ -216,6 +216,7 @@ function searchMembers() {
 function searchRegistrations() {
     TableManager.search('registration');
 }
+
 function addPhotoAlbum() {
     
     const form = document.getElementById('addPhotoAlbumForm');
@@ -224,39 +225,46 @@ function addPhotoAlbum() {
         return;
     }
 
-    // 建立資料物件
-    const photoAlbumData = {
-        title: document.getElementById('photoAlbumTitle').value,
-        url: document.getElementById('photoAlbumUrl').value,
-        updatetime: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    const docId = document.getElementById('photoAlbumId').value;
-    // 生成文檔ID
-    const photo_album_docId = docId ||firebase.firestore().collection('photo_album').doc().id;
+    // 處理圖片上傳
+    handleImageUpload('photo_album', null, document.getElementById('photoAlbumImageUpload'))
+        .then(docId => {
+            // 建立資料物件
+            const photoAlbumData = {
+                title: document.getElementById('photoAlbumTitle').value,
+                url: document.getElementById('photoAlbumUrl').value,
+                updatetime: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            const inputDocId = document.getElementById('photoAlbumId').value;
+            // 使用返回的docId、表單中的ID或生成新的
+            const finalDocId = inputDocId || docId || firebase.firestore().collection('photo_album').doc().id;
 
-    // 保存到Firestore
-    window.db.collection('photo_album').doc(photo_album_docId).set(photoAlbumData)
-        .then(() => {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addPhotoAlbumModal'));
-            modal.hide();
+            // 保存到Firestore
+            window.db.collection('photo_album').doc(finalDocId).set(photoAlbumData)
+                .then(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addPhotoAlbumModal'));
+                    modal.hide();
 
-            // 完整清除表單
-            document.getElementById('addPhotoAlbumForm').reset();
-            // 清空URL容器
-            TableManager.clearUrlContainer('photoAlbum');
+                    // 完整清除表單
+                    document.getElementById('addPhotoAlbumForm').reset();
+                    // 清除圖片預覽
+                    document.getElementById('photoAlbumImagePreview').src = '#';
+                    document.getElementById('photoAlbumImagePreview').style.display = 'none';
 
+                    // 同步數據後重新加載
+                    AdminDataManager.syncTable('photo_album').then(() => {
+                        TableManager.load('photoAlbum');
+                        loadDashboard();
+                    });
 
-
-            // 同步數據後重新加載
-            AdminDataManager.syncTable('photo_album').then(() => {
-                TableManager.load('photoAlbum');
-                loadDashboard();
-            });
-
-            alert('新增活動花絮成功！');
+                    alert('活動花絮新增/更新成功！');
+                })
+                .catch(error => {
+                    alert(`新增/更新失敗: ${error.message}`);
+                });
         })
         .catch(error => {
-            alert(`新增失敗: ${error.message}`);
+            alert(`圖片上傳失敗: ${error.message}`);
         });
 }
 
