@@ -413,21 +413,7 @@
 
             // 添加新的活動花絮卡片
             itemsToShow.forEach((album) => {
-                // 格式化日期顯示
-                let dateDisplay = '無日期';
-                if (album.updatetime) {
-                    try {
-                        const date = album.updatetime.toDate ? album.updatetime.toDate() : new Date(album.updatetime);
-                        dateDisplay = date.toLocaleDateString('zh-TW', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
-                    } catch (error) {
-                        console.error('格式化日期時出錯:', error);
-                    }
-                }
-
+                console.log("album", album);
                 const albumDiv = document.createElement('div');
                 albumDiv.className = 'col-md-4 mb-4';
                 
@@ -439,11 +425,8 @@
                         <img src="${imageUrl}" class="card-img-top album-cover" alt="${album.title || '活動照片'}" 
                              onerror="this.onerror=null; this.style.display='none';" 
                              style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">${album.title || '無標題'}</h5>
-                        </div>
                         <div class="card-footer">
-                            <small class="text-muted">更新時間：${dateDisplay}</small>
+                            <div class="text-muted text-center">${album.title || '無標題'}</div>
                         </div>
                     </div>
                 `;

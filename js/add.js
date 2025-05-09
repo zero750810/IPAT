@@ -217,34 +217,38 @@ function searchRegistrations() {
     TableManager.search('registration');
 }
 
-function addPhotoAlbum() {
+function addPhotoAlbum(id) {
     
     const form = document.getElementById('addPhotoAlbumForm');
     if (!form.checkValidity()) {
         form.reportValidity();
         return;
     }
+    console.log("form", form);
+    console.log("Edit ID:", id);
 
-    // 處理圖片上傳
-    handleImageUpload('photo_album', null, document.getElementById('photoAlbumImageUpload'))
-        .then(docId => {
+    // 先確定文檔ID
+    const inputDocId = document.getElementById('photoAlbumId').value;
+    // 優先使用傳入的編輯ID，其次是表單ID，最後才生成新ID
+    const finalDocId = id || inputDocId || firebase.firestore().collection('photo_album').doc().id;
+    console.log("確定的文檔ID:", finalDocId);
+
+    // 處理圖片上傳 - 傳入確定的ID
+    handleImageUpload('photo_album', finalDocId, document.getElementById('photoAlbumImageUpload'))
+        .then(() => {
             // 建立資料物件
             const photoAlbumData = {
                 title: document.getElementById('photoAlbumTitle').value,
                 url: document.getElementById('photoAlbumUrl').value,
                 updatetime: firebase.firestore.FieldValue.serverTimestamp()
             };
+            console.log("photoAlbumData", photoAlbumData);
             
-            const inputDocId = document.getElementById('photoAlbumId').value;
-            // 使用返回的docId、表單中的ID或生成新的
-            const finalDocId = inputDocId || docId || firebase.firestore().collection('photo_album').doc().id;
-
-            // 保存到Firestore
+            // 保存到Firestore - 使用同樣的ID
             window.db.collection('photo_album').doc(finalDocId).set(photoAlbumData)
                 .then(() => {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addPhotoAlbumModal'));
                     modal.hide();
-
                     // 完整清除表單
                     document.getElementById('addPhotoAlbumForm').reset();
                     // 清除圖片預覽
@@ -256,7 +260,6 @@ function addPhotoAlbum() {
                         TableManager.load('photoAlbum');
                         loadDashboard();
                     });
-
                     alert('活動花絮新增/更新成功！');
                 })
                 .catch(error => {

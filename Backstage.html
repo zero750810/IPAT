@@ -577,7 +577,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="addPhotoAlbumForm">
-                        <div class="mb-3" style="display: none;">
+                        <div class="mb-3">
                             <label for="photoAlbumId" class="form-label">活動編號</label>
                             <input type="text" class="form-control" id="photoAlbumId" readonly>
                         </div>
@@ -1020,10 +1020,15 @@
 
         // 圖片處理函數
         async function handleImageUpload(collectionName, docId, fileInput) {
-            if (!fileInput || !fileInput.files || !fileInput.files[0]) return null;
+            console.log('[📤 handleImageUpload] collection:', collectionName, 'docId:', docId);
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+                console.warn('[⚠️ 圖片未選擇或無效 input]');
+                return null;
+            }
 
             // 如果沒有docId (新增操作)，先創建一個臨時ID
             const tempId = docId || firebase.firestore().collection(collectionName).doc().id;
+            console.log('[🆔 使用的檔案 ID]', tempId);
 
             // 轉換圖片為webp格式
             const webpBlob = await convertToWebP(fileInput.files[0], collectionName);
@@ -1031,8 +1036,13 @@
             // 上傳到Storage
             const storageRef = firebase.storage().ref();
             const imageRef = storageRef.child(`${collectionName}/${tempId}.webp`);
-
-            await imageRef.put(webpBlob);
+            try {
+                await imageRef.put(webpBlob);
+                console.log('[✅ 圖片已上傳成功] 路徑:', `${collectionName}/${tempId}.webp`);
+            } catch (err) {
+                console.error('[❌ 圖片上傳失敗]', err);
+                throw err;
+            }
 
             return tempId; // 返回ID以便保存到文檔
         }
@@ -1048,8 +1058,11 @@
                         let maxWidth = 800;
                         let maxHeight = 600;
 
-                        // 成員照片限制為250x250
+                        // 成員照片限制為400x400
                         if (collectionName === 'member') {
+                            maxWidth = 400;
+                            maxHeight = 400;
+                        } else if (collectionName === 'photo_album') {
                             maxWidth = 400;
                             maxHeight = 400;
                         } else if (collectionName === 'news') {
@@ -1063,6 +1076,8 @@
                         let width = img.width;
                         let height = img.height;
 
+                        console.log('[🖼️ 原始圖片尺寸]', img.width, img.height);
+
                         if (width > maxWidth) {
                             height = (maxWidth / width) * height;
                             width = maxWidth;
@@ -1071,6 +1086,7 @@
                             width = (maxHeight / height) * width;
                             height = maxHeight;
                         }
+                        console.log('[🧱 調整後尺寸]', width, height);
                         // 創建Canvas並轉換為webp
                         const canvas = document.createElement('canvas');
                         canvas.width = width;
