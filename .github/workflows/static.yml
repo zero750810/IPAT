@@ -24,7 +24,15 @@ concurrency:
 jobs:
   # Single deploy job since we're just deploying
   deploy:
-    environment:
+      if: |
+        !(
+          contains(github.event.head_commit.message, 'js/add.js') ||
+          contains(github.event.head_commit.message, 'js/course.js') ||
+          contains(github.event.head_commit.message, 'js/member.js') ||
+          contains(github.event.head_commit.message, 'js/news.js') ||
+          contains(github.event.head_commit.message, 'js/photo_album.js')
+        )
+    environment:    
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
