@@ -176,7 +176,7 @@
                                 target="_blank" rel="noopener noreferrer"><img src="img/facebook.png" alt="Facebook"
                                     class="img-fluid" style="max-width: 30px;"></a></li>
                         <li class="list-inline-item"><a
-                                href="https://line.me/ti/g2/ftLDwke6OMbboIQNbkGf4Q?utm_source=invitation&amp;utm_medium=link_copy&amp;utm_campaign=default"
+                                href="https://line.me/R/ti/g/QErEEYyMhK"
                                 target="_blank" rel="noopener noreferrer"><img src="img/line.png" alt="Line"
                                     class="img-fluid" style="max-width: 30px;"></a></li>
                         <li class="list-inline-item"><a href="https://twitter.com/ipataiwan1" target="_blank"
@@ -224,24 +224,66 @@
                 // 獲取最新消息
                 const newsData = await window.dataManager.getNews();
                 window.allNewsItems = newsData; // 儲存所有新聞數據
+                console.log("獲取到的最新消息數量:", newsData.length);
                 updateNewsSection(newsData, 0, 6); // 初始加載6條
 
                 // 獲取課程資料
                 const coursesData = await window.dataManager.getCourses();
                 console.log("coursesData", coursesData);
+                console.log("獲取到的課程數量:", coursesData.length);
                 window.allCoursesItems = coursesData; // 儲存所有課程數據
                 updateCoursesSection(coursesData, 0, 6); // 初始加載6條
 
                 // 獲取活動花絮
-                const photoAlbumsData = await window.dataManager.getPhotoAlbum();
-                console.log("photoAlbumsData", photoAlbumsData);
-                window.allPhotoAlbumsItems = photoAlbumsData; // 儲存所有活動花絮數據
-                updatePhotoAlbumsSection(photoAlbumsData, 0, 6); // 初始加載6條
+                try {
+                    const photoAlbumsData = await window.dataManager.getPhotoAlbum();
+                    console.log("從 Firebase 獲取的 photoAlbumsData:", photoAlbumsData);
+                    
+                    // 合併 Firebase 數據和靜態數據
+                    let combinedPhotoAlbums = [];
+                    
+                    // 添加 Firebase 數據
+                    if (photoAlbumsData && Array.isArray(photoAlbumsData)) {
+                        combinedPhotoAlbums = [...photoAlbumsData];
+                    }
+                    
+                    // 添加本地靜態數據
+                    if (window.photo_album && Array.isArray(window.photo_album)) {
+                        console.log("本地靜態 photo_album 數據:", window.photo_album);
+                        // 檢查每個靜態項目是否已經存在於 Firebase 數據中
+                        window.photo_album.forEach(album => {
+                            // 檢查 ID 是否已存在
+                            const exists = combinedPhotoAlbums.some(item => item.id === album.id);
+                            if (!exists) {
+                                combinedPhotoAlbums.push(album);
+                            }
+                        });
+                    }
+                    
+                    console.log("合併後的 photo_album 數據數量:", combinedPhotoAlbums.length);
+                    window.allPhotoAlbumsItems = combinedPhotoAlbums; // 儲存所有活動花絮數據
+                    updatePhotoAlbumsSection(combinedPhotoAlbums, 0, 6); // 初始加載6條
+                } catch (error) {
+                    console.error("獲取活動花絮時出錯:", error);
+                    // 發生錯誤時，至少顯示本地靜態數據
+                    if (window.photo_album && Array.isArray(window.photo_album)) {
+                        console.log("使用本地靜態 photo_album 數據:", window.photo_album);
+                        window.allPhotoAlbumsItems = window.photo_album;
+                        updatePhotoAlbumsSection(window.photo_album, 0, 6);
+                    }
+                }
 
                 // 綁定「加載更多」按鈕事件
                 setupLoadMoreButtons();
             } catch (error) {
                 console.error('載入資料時出錯:', error);
+                
+                // 嘗試顯示本地靜態數據
+                if (window.photo_album && Array.isArray(window.photo_album)) {
+                    console.log("載入資料出錯，使用本地靜態 photo_album 數據:", window.photo_album);
+                    window.allPhotoAlbumsItems = window.photo_album;
+                    updatePhotoAlbumsSection(window.photo_album, 0, 6);
+                }
             }
         });
 
@@ -388,18 +430,24 @@
         function updatePhotoAlbumsSection(photoAlbumsItems, start, end) {
             const photoAlbumsContainer = document.getElementById('photo-albums-container');
             const loadMoreBtn = document.getElementById('loadMorePhotoAlbums');
-            if (!photoAlbumsContainer) return;
+            if (!photoAlbumsContainer) {
+                console.error("找不到 photo-albums-container 元素");
+                return;
+            }
 
             // 首次加載時清空容器
             if (start === 0) {
                 photoAlbumsContainer.innerHTML = '';
             }
 
-            if (!photoAlbumsItems || photoAlbumsItems.length === 0) {
+            if (!photoAlbumsItems || !Array.isArray(photoAlbumsItems) || photoAlbumsItems.length === 0) {
+                console.log("沒有活動花絮數據可顯示");
                 photoAlbumsContainer.innerHTML = '<div class="col-12 text-center"><p>目前沒有活動花絮</p></div>';
                 loadMoreBtn.style.display = 'none';
                 return;
             }
+
+            console.log(`顯示活動花絮: ${start} 到 ${end}, 總數: ${photoAlbumsItems.length}`);
 
             // 選擇要顯示的活動花絮範圍
             const itemsToShow = photoAlbumsItems.slice(start, end);
@@ -412,21 +460,58 @@
             }
 
             // 添加新的活動花絮卡片
-            itemsToShow.forEach((album) => {
-                console.log("album", album);
+            itemsToShow.forEach((album, index) => {
+                console.log(`處理活動花絮 #${index + start}:`, album);
+                
+                // 格式化日期顯示
+                let dateDisplay = '無日期';
+                if (album.updatetime) {
+                    try {
+                        // 處理不同格式的日期
+                        let date;
+                        if (typeof album.updatetime === 'string') {
+                            // 字符串日期
+                            date = new Date(album.updatetime);
+                        } else if (album.updatetime.toDate) {
+                            // Firestore Timestamp
+                            date = album.updatetime.toDate();
+                        } else if (album.updatetime.seconds) {
+                            // Firestore Timestamp (作為對象)
+                            date = new Date(album.updatetime.seconds * 1000);
+                        } else {
+                            // 其他格式
+                            date = new Date(album.updatetime);
+                        }
+                        
+                        if (!isNaN(date.getTime())) {
+                            dateDisplay = date.toLocaleDateString('zh-TW', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`格式化活動花絮日期時出錯:`, error, album.updatetime);
+                    }
+                }
+
                 const albumDiv = document.createElement('div');
                 albumDiv.className = 'col-md-4 mb-4';
                 
                 // 準備圖片URL
                 let imageUrl = `https://firebasestorage.googleapis.com/v0/b/ipat-database.firebasestorage.app/o/photo_album%2F${album.id}.webp?alt=media`;
+                console.log(`活動花絮圖片URL: ${imageUrl}`);
                 
                 albumDiv.innerHTML = `
                     <div class="card h-100" style="cursor: pointer;" onclick="window.open('${album.url}', '_blank')">
                         <img src="${imageUrl}" class="card-img-top album-cover" alt="${album.title || '活動照片'}" 
-                             onerror="this.onerror=null; this.style.display='none';" 
+                             onerror="this.onerror=null; this.style.display='none'; console.log('圖片載入失敗: ${imageUrl}');" 
                              style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">${album.title || '無標題'}</h5>
+                        </div>
                         <div class="card-footer">
-                            <div class="text-muted text-center">${album.title || '無標題'}</div>
+                            <small class="text-muted">更新時間：${dateDisplay}</small>
                         </div>
                     </div>
                 `;

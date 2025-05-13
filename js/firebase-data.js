@@ -293,7 +293,7 @@ class DataManager {
         console.log("getPhotoAlbum 開始執行");
 
         // 調試信息
-        console.log("檢查 window.news 是否存在:", window.photo_album ? "存在" : "不存在");
+        console.log("檢查 window.photo_album 是否存在:", window.photo_album ? "存在" : "不存在");
         if (window.photo_album) {
             console.log("window.photo_album 類型:", typeof window.photo_album);
             console.log("window.photo_album 長度:", window.photo_album.length);
@@ -304,51 +304,110 @@ class DataManager {
         console.log(`今天 0 時的時間戳: ${todayStart}, ${new Date(todayStart).toLocaleString()}`);
 
         // 1. 從 photo_album.js 獲取靜態數據
-        let staticphoto_albumData = [];
-        if (window.photo_album && window.photo_album.length > 0) {
-            staticphoto_albumData = window.photo_album;
-            console.log(`讀取到 ${staticphoto_albumData.length} 條靜態新聞數據`);
+        let staticPhotoAlbumData = [];
+        if (window.photo_album && Array.isArray(window.photo_album) && window.photo_album.length > 0) {
+            staticPhotoAlbumData = window.photo_album;
+            console.log(`讀取到 ${staticPhotoAlbumData.length} 條靜態活動花絮數據:`, staticPhotoAlbumData);
         } else {
-            console.warn("無法從 window.photo_album 獲取靜態數據");
+            console.warn("無法從 window.photo_album 獲取靜態數據或數據為空");
         }
 
         try {
-            console.log("從 Firebase 獲取今天 0 時之後的所有新聞");
+            console.log("嘗試從 Firebase 獲取今天 0 時之後的所有活動花絮");
             if (!window.db) {
-                console.error("window.db 未定義，無法獲取資料");
-                return staticphoto_albumData; // 返回所有靜態數據
+                console.error("window.db 未定義，無法從 Firebase 獲取資料");
+                return staticPhotoAlbumData; // 返回所有靜態數據
             }
 
-            // 2. 從 Firestore 獲取今天 0 時之後的新聞
+            // 2. 從 Firestore 獲取今天 0 時之後的活動花絮
+            console.log("建立 Firestore 查詢");
             const todayTimestamp = new Date(todayStart);
-            const snapshot = await window.db.collection('photo_album')
-                .where('updatetime', '>=', todayTimestamp)
-                .orderBy('updatetime', 'desc')
-                .get();
+            let query = window.db.collection('photo_album');
+            
+            // 安全地添加查詢條件
+            try {
+                query = query.where('updatetime', '>=', todayTimestamp)
+                             .orderBy('updatetime', 'desc');
+                console.log("查詢條件已設置");
+            } catch (queryError) {
+                console.error("設置查詢條件時出錯:", queryError);
+                query = window.db.collection('photo_album')
+                               .orderBy('updatetime', 'desc')
+                               .limit(20);
+                console.log("回退到簡單查詢");
+            }
 
-            console.log(`獲取到 ${snapshot.size} 條今天更新的新聞記錄`);
+            // 嘗試執行查詢
+            console.log("執行 Firestore 查詢");
+            const snapshot = await query.get();
+            console.log(`獲取到 ${snapshot.size} 條 Firestore 活動花絮記錄`);
 
             // 3. 處理 Firestore 數據
-            let firestorephoto_album = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                updatetime: doc.data().updatetime ?
-                    doc.data().updatetime.toDate().getTime() : Date.now()
-            }));
+            let firestorePhotoAlbums = [];
+            snapshot.forEach(doc => {
+                try {
+                    const data = doc.data();
+                    const item = {
+                        id: doc.id,
+                        ...data
+                    };
+                    
+                    // 安全地處理時間戳
+                    if (data.updatetime) {
+                        try {
+                            if (typeof data.updatetime.toDate === 'function') {
+                                item.updatetime = data.updatetime.toDate().getTime();
+                            } else if (data.updatetime.seconds) {
+                                item.updatetime = new Date(data.updatetime.seconds * 1000).getTime();
+                            } else {
+                                item.updatetime = Date.now();
+                            }
+                        } catch (timeError) {
+                            console.error("處理時間戳時出錯:", timeError);
+                            item.updatetime = Date.now();
+                        }
+                    } else {
+                        item.updatetime = Date.now();
+                    }
+                    
+                    firestorePhotoAlbums.push(item);
+                } catch (docError) {
+                    console.error("處理文檔時出錯:", docError);
+                }
+            });
+            
+            console.log("處理完成的 Firestore 活動花絮數據:", firestorePhotoAlbums);
 
             // 4. 去重合併（Firebase 數據優先）
-            const existingIds = new Set(firestorephoto_album.map(item => item.id));
-            const filteredStaticphoto_album = staticphoto_albumData.filter(item => !existingIds.has(item.id));
+            const existingIds = new Set(firestorePhotoAlbums.map(item => item.id));
+            console.log("Firebase 數據 ID 列表:", Array.from(existingIds));
+            
+            const filteredStaticPhotoAlbums = staticPhotoAlbumData.filter(item => {
+                const notExists = !existingIds.has(item.id);
+                if (!notExists) {
+                    console.log(`靜態數據中的 ID ${item.id} 已存在於 Firebase 數據中，將被過濾掉`);
+                }
+                return notExists;
+            });
+            
+            console.log("過濾後的靜態數據:", filteredStaticPhotoAlbums);
 
             // 5. 合併數據並返回
-            const combinedphoto_album = [...firestorephoto_album, ...filteredStaticphoto_album];
-            console.log(`新聞頁面：合併了 ${firestorephoto_album.length} 條 Firestore 數據和 ${filteredStaticphoto_album.length} 條靜態數據`);
-
-            return combinedphoto_album;
+            const combinedPhotoAlbums = [...firestorePhotoAlbums, ...filteredStaticPhotoAlbums];
+            combinedPhotoAlbums.sort((a, b) => {
+                // 安全地進行排序
+                const timeA = a.updatetime || 0;
+                const timeB = b.updatetime || 0;
+                return timeB - timeA;
+            });
+            
+            console.log(`活動花絮頁面：合併了 ${firestorePhotoAlbums.length} 條 Firestore 數據和 ${filteredStaticPhotoAlbums.length} 條靜態數據，總共 ${combinedPhotoAlbums.length} 條`);
+            return combinedPhotoAlbums;
         } catch (error) {
-            console.error('獲取新聞資料失敗:', error);
+            console.error('獲取活動花絮資料失敗:', error);
             // 出錯時返回靜態數據
-            return staticphoto_albumData;
+            console.log('由於錯誤，返回靜態活動花絮數據:', staticPhotoAlbumData);
+            return staticPhotoAlbumData;
         }
     }
 }
