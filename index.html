@@ -223,16 +223,38 @@
 
                 // 獲取最新消息
                 const newsData = await window.dataManager.getNews();
-                window.allNewsItems = newsData; // 儲存所有新聞數據
+                window.allNewsItems = newsData.sort((a, b) => {
+                    // 確保有更新時間
+                    if (!a.updatetime) return 1;
+                    if (!b.updatetime) return -1;
+                    
+                    // 處理不同格式的更新時間
+                    const aTime = a.updatetime.toDate ? a.updatetime.toDate().getTime() : new Date(a.updatetime).getTime();
+                    const bTime = b.updatetime.toDate ? b.updatetime.toDate().getTime() : new Date(b.updatetime).getTime();
+                    
+                    // 降序排列，最新的在前面
+                    return bTime - aTime;
+                }); // 依更新時間排序，最新的在前面
                 console.log("獲取到的最新消息數量:", newsData.length);
-                updateNewsSection(newsData, 0, 6); // 初始加載6條
+                updateNewsSection(window.allNewsItems, 0, 6); // 初始加載6條
 
                 // 獲取課程資料
                 const coursesData = await window.dataManager.getCourses();
                 console.log("coursesData", coursesData);
                 console.log("獲取到的課程數量:", coursesData.length);
-                window.allCoursesItems = coursesData; // 儲存所有課程數據
-                updateCoursesSection(coursesData, 0, 6); // 初始加載6條
+                window.allCoursesItems = coursesData.sort((a, b) => {
+                    // 確保有更新時間
+                    if (!a.updatetime) return 1;
+                    if (!b.updatetime) return -1;
+                    
+                    // 處理不同格式的更新時間
+                    const aTime = a.updatetime.toDate ? a.updatetime.toDate().getTime() : new Date(a.updatetime).getTime();
+                    const bTime = b.updatetime.toDate ? b.updatetime.toDate().getTime() : new Date(b.updatetime).getTime();
+                    
+                    // 降序排列，最新的在前面
+                    return bTime - aTime;
+                }); // 依更新時間排序，最新的在前面
+                updateCoursesSection(window.allCoursesItems, 0, 6); // 初始加載6條
 
                 // 獲取活動花絮
                 try {
@@ -260,6 +282,39 @@
                         });
                     }
                     
+                    // 依更新時間排序，最新的在前面
+                    combinedPhotoAlbums.sort((a, b) => {
+                        // 確保有更新時間
+                        if (!a.updatetime) return 1;
+                        if (!b.updatetime) return -1;
+                        
+                        // 處理不同格式的更新時間
+                        let aTime, bTime;
+                        
+                        if (typeof a.updatetime === 'string') {
+                            aTime = new Date(a.updatetime).getTime();
+                        } else if (a.updatetime.toDate) {
+                            aTime = a.updatetime.toDate().getTime();
+                        } else if (a.updatetime.seconds) {
+                            aTime = a.updatetime.seconds * 1000;
+                        } else {
+                            aTime = new Date(a.updatetime).getTime();
+                        }
+                        
+                        if (typeof b.updatetime === 'string') {
+                            bTime = new Date(b.updatetime).getTime();
+                        } else if (b.updatetime.toDate) {
+                            bTime = b.updatetime.toDate().getTime();
+                        } else if (b.updatetime.seconds) {
+                            bTime = b.updatetime.seconds * 1000;
+                        } else {
+                            bTime = new Date(b.updatetime).getTime();
+                        }
+                        
+                        // 降序排列，最新的在前面
+                        return bTime - aTime;
+                    });
+                    
                     console.log("合併後的 photo_album 數據數量:", combinedPhotoAlbums.length);
                     window.allPhotoAlbumsItems = combinedPhotoAlbums; // 儲存所有活動花絮數據
                     updatePhotoAlbumsSection(combinedPhotoAlbums, 0, 6); // 初始加載6條
@@ -268,8 +323,19 @@
                     // 發生錯誤時，至少顯示本地靜態數據
                     if (window.photo_album && Array.isArray(window.photo_album)) {
                         console.log("使用本地靜態 photo_album 數據:", window.photo_album);
-                        window.allPhotoAlbumsItems = window.photo_album;
-                        updatePhotoAlbumsSection(window.photo_album, 0, 6);
+                        window.allPhotoAlbumsItems = window.photo_album.sort((a, b) => {
+                            // 確保有更新時間
+                            if (!a.updatetime) return 1;
+                            if (!b.updatetime) return -1;
+                            
+                            // 處理不同格式的更新時間
+                            const aTime = new Date(a.updatetime).getTime();
+                            const bTime = new Date(b.updatetime).getTime();
+                            
+                            // 降序排列，最新的在前面
+                            return bTime - aTime;
+                        }); // 依更新時間排序，最新的在前面
+                        updatePhotoAlbumsSection(window.allPhotoAlbumsItems, 0, 6);
                     }
                 }
 
@@ -281,8 +347,19 @@
                 // 嘗試顯示本地靜態數據
                 if (window.photo_album && Array.isArray(window.photo_album)) {
                     console.log("載入資料出錯，使用本地靜態 photo_album 數據:", window.photo_album);
-                    window.allPhotoAlbumsItems = window.photo_album;
-                    updatePhotoAlbumsSection(window.photo_album, 0, 6);
+                    window.allPhotoAlbumsItems = window.photo_album.sort((a, b) => {
+                        // 確保有更新時間
+                        if (!a.updatetime) return 1;
+                        if (!b.updatetime) return -1;
+                        
+                        // 處理不同格式的更新時間
+                        const aTime = new Date(a.updatetime).getTime();
+                        const bTime = new Date(b.updatetime).getTime();
+                        
+                        // 降序排列，最新的在前面
+                        return bTime - aTime;
+                    }); // 依更新時間排序，最新的在前面
+                    updatePhotoAlbumsSection(window.allPhotoAlbumsItems, 0, 6);
                 }
             }
         });
