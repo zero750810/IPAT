@@ -31,7 +31,7 @@
     "tag": [
       "理事"
     ],
-    "updatetime": "2025-04-10T04:13:59.100Z",
+    "updatetime": "2025-05-15T08:35:39.808Z",
     "urls": []
   },
   {
@@ -47,11 +47,11 @@
   {
     "id": "jIxUKEqr7W7E9HtRugcu",
     "name": "陳淑芳",
-    "introduction": " ",
+    "introduction": " Shu-fang Chen, Ph.D<br>現職<br>國立臺東大學幼兒教育學系副教授<br>Associate Professor, <br>National Taitung University<br>Dept. of Early Childhood Education<br>最高學歷<br>美國馬里蘭大學課程與教學哲學博士<br>University of Maryland at College Park<br>Dept. Curriculum & Instruction<br>資歷<br>國立臺東大學幼兒教育學系暨碩士班系主任<br>兒童發展暨早期介入研究中心中心主任<br>美國馬里蘭大學科學教育研究中心訪問學者<br>教育部師資培用聯盟幼兒教育教學研究中心主任<br>教育部國民教育幼兒園輔導計畫輔導教授<br>教育部幼兒園教保活動課程大綱宣講人員暨輔導教授<br>教育部教保相關人員違法事件調查專業人員專家學者代表<br>專業實務<br>公私協力托嬰中心/公共托育家園創辦兼負責人<br>非營利幼兒園、職場互助教保服務中心創辦兼負責人<br>臺東大學幼兒探遊館創辦兼負責人<br>臺東縣、花蓮縣部落遊戲屋創辦計畫主持人<br>部落互助教保服務中心設立輔導計畫主持人<br>原住民委員會沈浸式族語幼兒園專管中心共同主持人<br>專業社群<br>美國幼兒教育學會（NAEYC）終身會員<br>中華民國幼兒教育改革研究協會理事/監事/理事長<br>社團法人東台灣幼兒教保專業促進協會創會理事長<br>社團法人金字塔幼兒教育研究學會創會理事長<br>臺東縣基督教女青年會（TT-YWCA）理事/理事長<br>國際遊戲學會台灣分會（IPAT）發起/理事<br>研究專長<br>原住民族兒童對天空的想像與天文傳說的對話<br>原住民兒童科學圖畫書閱讀、理解與導讀之研究 <br>原住民族文化與科學融合的教學規劃與實踐<br>山豬獵人~文化回應科學課程對原住民兒童學業自我效能與科學學習成效之研究<br>雅美族海洋文化回應科學體驗課程之教與學的對話<br>文化合宜適性教學實務於布農族幼兒園的實踐<br>原住民族幼兒族語教具的研發與推廣<br>玩出族語大能力~幼兒族語教具研發的理念與創新<br>動手玩移動學習館～鳥類調查員特展",
     "tag": [
       "理事"
     ],
-    "updatetime": "2025-04-10T03:59:06.699Z",
+    "updatetime": "2025-05-26T10:31:34.421Z",
     "urls": []
   },
   {
@@ -87,11 +87,11 @@
   {
     "id": "EMgWBRf1jUctEoa6qIfe",
     "name": "吳煌榮",
-    "introduction": " ",
+    "introduction": "學歷：<br>美國加州柏克萊大學 (U. C. Berkeley) 機械工程博士<br>美國加州柏克萊大學 (U. C. Berkeley) 機械工程碩士<br>國立台灣大學機械工程學士   <br>現職：<br>國際遊戲協會臺灣分會現任理事長<br>教育部臺灣浸信會神學研修學院立案董事<br>經濟部國家標準技術諮詢委員<br>經歷 :<br>美國密蘇里大學終身職教授<br>Tenured Professor, Department of Mechanical, Aerospace Engineering & Engineering Mechanics, University of Missouri, U.S.A.<br>台灣大學身心障礙者輔具工程研究中心教授兼副主任<br>國立中正大學機械工程研究所創所所長<br>長庚大學機械工程系創系系主任<br>教育部國家大學入學考試中心處長",
     "tag": [
       "理事長"
     ],
-    "updatetime": "2025-04-10T04:02:24.634Z",
+    "updatetime": "2025-05-26T10:30:58.043Z",
     "urls": []
   },
   {
@@ -107,11 +107,11 @@
   {
     "id": "YTxEOVabW6s7iXf4Wv7y",
     "name": "林士真",
-    "introduction": " ",
+    "introduction": " 學歷:<br>紐約 河濱街教育學院Bank Street College of Education (NYC) 教育碩士(Master of Education)<br>紐約 河濱街教育學院Bank Street College of Education (NYC) 教育科學碩士(Master of Science)<br>簡歷：<br>國立北教育大學幼兒與家庭教育系兼任講師、臺北市立大學幼兒教育系兼任講師、新加坡新苗學院兼任講師、臺北市幼稚園機構評鑒委員、NLP執行師、台北市親子館輔導委員<br>專長領域：<br>開放教育課程設計、融合教育、幼兒教育設計與運用、遊戲課程設計",
     "tag": [
       "監事"
     ],
-    "updatetime": "2025-04-10T04:01:23.084Z",
+    "updatetime": "2025-05-26T10:33:28.835Z",
     "urls": []
   },
   {
