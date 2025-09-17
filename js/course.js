@@ -2,14 +2,14 @@
   const course = [
   {
     "id": "0I8BJWJpcJPZ4QKp4P2j",
-    "title": "TPAT雙月論壇-202509",
+    "title": "IPAT雙月論壇-202509 講師:蔡延治 老師、林士真 老師",
     "content": "",
     "teacher": "蔡延治",
     "location": "台北市萬華親子館",
     "price": 0,
     "startdate": "2025-09-27T05:30:00.000Z",
     "enddate": "2025-09-27T08:30:00.000Z",
-    "updatetime": "2025-09-16T02:15:48.040Z",
+    "updatetime": "2025-09-17T02:57:39.028Z",
     "urls": [],
     "active": true,
     "capacity": 25
