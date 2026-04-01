@@ -1,6 +1,20 @@
 
   const course = [
   {
+    "id": "ePlfReWalawHMs1o5PLn",
+    "title": "IPAT雙月論壇-發聲游藝",
+    "content": "",
+    "teacher": "張世宗",
+    "location": "成長基金會",
+    "price": 0,
+    "startdate": "2026-04-25T06:00:00.000Z",
+    "enddate": "2026-04-25T09:00:00.000Z",
+    "updatetime": "2026-04-01T01:41:57.762Z",
+    "urls": [],
+    "active": true,
+    "capacity": 20
+  },
+  {
     "id": "0I8BJWJpcJPZ4QKp4P2j",
     "title": "IPAT雙月論壇-202509 講師:蔡延治 老師、林士真 老師",
     "content": "",
