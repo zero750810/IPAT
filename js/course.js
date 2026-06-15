@@ -1,6 +1,20 @@
 
   const course = [
   {
+    "id": "9OHAUrrZmJhOgtr4E0hU",
+    "title": "IPAT雙月論壇-動力游藝",
+    "content": "",
+    "teacher": "張世宗",
+    "location": "成長基金會",
+    "price": 0,
+    "startdate": "2026-06-27T06:00:00.000Z",
+    "enddate": "2026-06-27T09:00:00.000Z",
+    "updatetime": "2026-06-15T02:40:14.959Z",
+    "urls": [],
+    "active": true,
+    "capacity": 20
+  },
+  {
     "id": "ePlfReWalawHMs1o5PLn",
     "title": "IPAT雙月論壇-發聲游藝",
     "content": "",
