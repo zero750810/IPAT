@@ -1,0 +1,286 @@
+/* ===== Global ===== */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #333;
+  background-color: #fafafa;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+/* ===== Section Title ===== */
+.section-title {
+  color: #e6a817;
+  font-weight: 700;
+  letter-spacing: 2px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: #e6a817;
+  margin: 10px auto 0;
+  border-radius: 2px;
+}
+
+/* ===== Header ===== */
+.site-header {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.site-header .nav-link {
+  font-weight: 500;
+  color: #444;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.site-header .nav-link:hover,
+.site-header .nav-link.router-link-exact-active {
+  color: #e6a817;
+  background: rgba(230, 168, 23, 0.08);
+}
+
+/* ===== Cards ===== */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card[role="button"]:hover,
+.card-clickable:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.card-footer {
+  background: transparent;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 0.85rem;
+}
+
+.card-title {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* ===== Sections ===== */
+section {
+  position: relative;
+}
+
+section.bg-light {
+  background-color: #f4f6f8 !important;
+}
+
+/* ===== Buttons ===== */
+.btn-primary {
+  background-color: #e6a817;
+  border-color: #e6a817;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #d49b10;
+  border-color: #d49b10;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(230, 168, 23, 0.3);
+}
+
+.btn-outline-primary {
+  color: #e6a817;
+  border-color: #e6a817;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-outline-primary:hover {
+  background-color: #e6a817;
+  border-color: #e6a817;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* ===== Footer ===== */
+.site-footer {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.site-footer a.text-white:hover {
+  color: #e6a817 !important;
+  transition: color 0.2s;
+}
+
+.site-footer h6 {
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 0.75rem;
+}
+
+.site-footer hr {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ===== Accordion (Courses) ===== */
+.accordion-button.bg-primary {
+  background-color: #3a7bd5 !important;
+  border-color: #3a7bd5 !important;
+  font-weight: 500;
+  border-radius: 0;
+}
+
+.accordion-button.bg-primary:not(.collapsed) {
+  background-color: #2d6cc0 !important;
+}
+
+.accordion-item {
+  border: none;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.accordion-body {
+  background: #fff;
+  border-left: 3px solid #3a7bd5;
+}
+
+/* ===== Modal ===== */
+.modal-content {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-title {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* ===== Form Controls ===== */
+.form-control {
+  border-radius: 8px;
+  border: 1.5px solid #dee2e6;
+  padding: 0.6rem 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  border-color: #e6a817;
+  box-shadow: 0 0 0 0.2rem rgba(230, 168, 23, 0.15);
+}
+
+/* ===== Member Cards ===== */
+.member-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.member-card .card-body h5 {
+  color: #2c3e50;
+  font-weight: 700;
+  border-bottom: 2px solid #e6a817;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.member-card img {
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* ===== Badge ===== */
+.badge.bg-primary {
+  background-color: #e6a817 !important;
+  font-weight: 500;
+}
+
+/* ===== Banner ===== */
+.banner-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-wrapper img {
+  display: block;
+}
+
+/* ===== Loading Spinner ===== */
+.spinner-border {
+  color: #e6a817;
+}
+
+/* ===== Utility ===== */
+.text-warning {
+  color: #e6a817 !important;
+}
+
+/* ===== Smooth scroll ===== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ===== Admin sidebar ===== */
+.admin-sidebar {
+  min-height: calc(100vh - 56px);
+  background-color: #343a40;
+}
+
+.admin-sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.75);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  transition: all 0.2s;
+}
+
+.admin-sidebar .nav-link:hover,
+.admin-sidebar .nav-link.router-link-active {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    border-radius: 10px;
+  }
+}

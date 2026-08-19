@@ -1,0 +1,18 @@
+name = "ipat-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ipat-db"
+database_id = "placeholder-id"
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "ipat-images"
+
+[vars]
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD_HASH = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
+JWT_SECRET = "change-me-in-production"
+CORS_ORIGIN = "http://localhost:5174"

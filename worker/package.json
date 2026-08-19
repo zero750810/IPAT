@@ -1,0 +1,19 @@
+{
+  "name": "ipat-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute ipat-db --local --file=schema.sql",
+    "db:seed": "wrangler d1 execute ipat-db --local --file=seed.sql"
+  },
+  "dependencies": {
+    "hono": "^4.7.10"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250402.0",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.14.1"
+  }
+}
