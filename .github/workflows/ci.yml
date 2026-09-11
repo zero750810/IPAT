@@ -1,9 +1,0 @@
-name: CI
-on:
-  push:
-  pull_request:
-jobs:
-  gate:
-    name: 關卡
-    uses: zero750810/zerolin-modules/.github/workflows/shared-ci.yml@main
-    secrets: inherit
